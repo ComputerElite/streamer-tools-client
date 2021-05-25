@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -47,6 +47,6 @@ jobs:
       - name: Upload windows binary
         uses: actions/upload-artifact@v2
         with:
-          name: streamer-tools-client
+          name: streamer-tools-client_win.zip
           path: ./build/streamer-tools-client.zip
           if-no-files-found: error

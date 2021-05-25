@@ -14,6 +14,7 @@ const  { networkInterfaces }  = require('os')
 const { dialog } = electron
 const { app } = electron
 const  {BrowserWindow } = electron
+const dcrp = require('discord-rich-presence')('846852034330492928');
 
 const MulticastPort = 53500
 const MulticastIp = "232.0.53.5"
@@ -221,6 +222,18 @@ function downloadFile(url, dest) {
     });
 }
 
+setInterval(() => {
+    UpdatePresence();
+}, 1000);
+
+function UpdatePresence() {
+    dcrp.updatePresence({
+        state: "Score: " + raw["score"],
+        details: raw["levelName"] + " - " + raw["songAuthor"],
+        instance: true
+    })
+}
+
 function downloadOverlay(overlay) {
     console.log("Downloading " + overlay.Name)
     var dir = path.join(__dirname, "overlays", overlay.Name)
@@ -256,7 +269,6 @@ api.use(bodyParser.json());
 api.use(bodyParser.raw());
 
 api.post(`/api/download`, async function(req, res) {
-    console.log(req.body.Name)
     config.overlays.forEach(overlay => {
         if(overlay.Name == req.body.Name) {
             downloadOverlay(overlay);
