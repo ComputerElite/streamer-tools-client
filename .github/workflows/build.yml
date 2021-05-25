@@ -18,14 +18,16 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14
+          
+      - name: list dir
+        run: dir
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
+      - name: Pack
+        run: npm pack
+        
+      - name: Upload packaged code
+        uses: actions/upload-artifact@v2
         with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
-
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          name: streamer-tools-client.tgz
+          path: ./streamer-tools-client-1.0.0.tgz
+          if-no-files-found: error
