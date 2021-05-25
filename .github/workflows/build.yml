@@ -24,7 +24,7 @@ jobs:
         
       - name: Get version
         id: getversion
-        run: echo '::set-output name=v::$(node -p "require(`./package.json`).version")'
+        run: echo "::set-output name=v::$(node -p "require('./package.json').version")"
         
       - name: Display version
         run: echo ${{ steps.getversion.outputs.v }}
