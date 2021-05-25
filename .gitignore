@@ -1,3 +1,4 @@
-overlays/
-node_modules/
-config.json
+/overlays
+/node_modules
+/.vs
+/config.json
