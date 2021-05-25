@@ -9,11 +9,11 @@ const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
 var shell = require('shelljs');
-const { clipboard } = require('electron')
+const { clipboard } = electron
 const  { networkInterfaces }  = require('os')
-const { dialog } = require('electron')
-const { app } = require('electron');
-const  {BrowserWindow } = require('electron')
+const { dialog } = electron
+const { app } = electron
+const  {BrowserWindow } = electron
 
 const MulticastPort = 53500
 const MulticastIp = "232.0.53.5"
