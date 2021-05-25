@@ -29,12 +29,15 @@ jobs:
       - name: Display version
         run: echo ${{ steps.getversion.outputs.v }}
 
-      - name: Pack
-        run: npm pack
+      - name: Install modules
+        run: npm i
         
-      - name: Upload packaged code
+      - name: Build windows binary
+        run: npm run dist
+        
+      - name: Upload windows binary
         uses: actions/upload-artifact@v2
         with:
-          name: streamer-tools-client.tgz
-          path: ./streamer-tools-client-${{ steps.getversion.outputs.v }}.tgz
+          name: streamer-tools-client.exe
+          path: ./build/streamer-tools Client Setup ${{ steps.getversion.outputs.v }}.exe
           if-no-files-found: error
