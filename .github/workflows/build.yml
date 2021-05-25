@@ -47,6 +47,6 @@ jobs:
       - name: Upload windows binary
         uses: actions/upload-artifact@v2
         with:
-          name: streamer-tools-client.exe
+          name: streamer-tools-client
           path: ./build/streamer-tools-client.zip
           if-no-files-found: error
