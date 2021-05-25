@@ -32,12 +32,21 @@ jobs:
       - name: Install modules
         run: npm i
         
+      - name: Make build dir
+        run: mkdir build
+        
       - name: Build windows binary
         run: npm run dist
+        
+      - name: package to zip
+        uses: papeloto/action-zip@v1
+        with:
+          files: ./build/win-unpacked
+          dest: ./build/streamer-tools-client.zip
         
       - name: Upload windows binary
         uses: actions/upload-artifact@v2
         with:
           name: streamer-tools-client.exe
-          path: ./build/streamer-tools Client Setup ${{ steps.getversion.outputs.v }}.exe
+          path: ./build/streamer-tools-client.zip
           if-no-files-found: error
