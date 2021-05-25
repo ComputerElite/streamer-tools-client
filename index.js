@@ -15,6 +15,21 @@ const { dialog } = require('electron')
 const { app } = require('electron');
 const  {BrowserWindow } = require('electron')
 
+const MulticastPort = 53500
+const MulticastIp = "232.0.53.5"
+const HttpPort = 53502
+const ApiPort = 53510
+/*
+Ports:
+    Multicast: 53500
+    socket: 53501
+    http: 53502
+
+    local api: 53510
+IP:
+    Multicast: 
+*/
+
 let mainWindow;
 
 let config;
@@ -33,22 +48,21 @@ let raw = {}
 var ipInQueue = ""
 
 function SetupMulticast(localIP) {
-    var PORT = 5555;
+    var PORT = MulticastPort;
     var HOST = localIP;
     var dgram = require('dgram');
     var client = dgram.createSocket('udp4');
 
     client.on('listening', function () {
         var address = client.address();
-        console.log('UDP Client listening on ' + address.address + ":" + address.port);
         client.setBroadcast(true)
         client.setMulticastTTL(128); 
-        client.addMembership('225.1.1.1');
+        client.addMembership(MulticastIp, HOST);
+        console.log('UDP Client listening on ' + address.address + ":" + address.port);
     });
 
     client.on('message', function (message, remote) {   
-        console.log('A: Epic Command Received. Preparing Relay.');
-        console.log('B: From: ' + remote.address + ':' + remote.port +' - ' + message);
+        console.log('Recieved multicast: ' + remote.address + ':' + remote.port +' - ' + message);
         ipInQueue = remote.address;
         NotifyClient();
     });
@@ -98,13 +112,19 @@ GetLocalIPs().forEach(ip => {
     SetupMulticast(ip)
 })
 
+var lastError = ""
 
 setInterval(() => {
-    fetch("http://" + config.ip + ":3501").then((res) => {
+    fetch("http://" + config.ip + ":" + HttpPort).then((res) => {
         res.json().then((json) => {
             raw = json
             //console.log(json)
         })
+    }).catch((err) => {
+        if(lastError != err.toString()) {
+            lastError = err.toString();
+            console.error("unable to connect to quest: " + lastError)
+        }
     })
 }, config.interval);
 
@@ -276,7 +296,7 @@ api.get(`/api/getinterval`, async function(req, res) {
 })
 
 api.get(`/api/getOverlay`, async function(req, res) {
-    var Url = new URL("http://localhost:501" + req.url)
+    var Url = new URL("http://localhost:" + ApiPort + req.url)
     var name = Url.searchParams.get("name")
     var success = false;
     config.overlays.forEach(overlay => {
@@ -326,7 +346,7 @@ api.get(`/api/overlays`, async function(req, res) {
 })
 
 api.get(`/api/raw`, async function(req, res) {
-    var Url = new URL("http://localhost:501" + req.url)
+    var Url = new URL("http://localhost:" + ApiPort + req.url)
     var ip = Url.searchParams.get("ip")
     if(ip != null && ip != "" && ip != "null" && Url.searchParams.get("nosetip") == null) {
         config.ip = ip;
@@ -337,4 +357,4 @@ api.get(`/api/raw`, async function(req, res) {
 
 api.use("/overlays", express.static(path.join(__dirname, "overlays")))
 
-api.listen(501)
+api.listen(ApiPort)

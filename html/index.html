@@ -8,13 +8,13 @@
     <body>
         <div style="display: flex;">
             <div class="sidebar" style="flex: 0;">
-                <div class="sidebarItemSelected" href="#" onclick='fetch("http://localhost:501/windows/home")'>
+                <div class="sidebarItemSelected" href="#" onclick='fetch("http://localhost:53510/windows/home")'>
                     Home
                 </div>
-                <div class="sidebarItem" onclick='fetch("http://localhost:501/windows/overlays")'>
+                <div class="sidebarItem" onclick='fetch("http://localhost:53510/windows/overlays")'>
                     Overlays
                 </div>
-                <div class="sidebarItem" onclick='fetch("http://localhost:501/windows/downloads")'>
+                <div class="sidebarItem" onclick='fetch("http://localhost:53510/windows/downloads")'>
                     Downloads
                 </div>
             </div>
@@ -38,7 +38,7 @@
     </body>
     <script>
         var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
-        fetch("http://localhost:501/api/getip").then((res) => {
+        fetch("http://localhost:53510/api/getip").then((res) => {
             res.json().then((json) => {
                 console.log(json.ip)
                 if(json.ip != null && json.ip != "null") document.getElementById("ip").value = json.ip
@@ -52,7 +52,7 @@
                 return
             }
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:501/api/postip", true);
+            xhr.open("POST", "http://localhost:53510/api/postip", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "ip": document.getElementById("ip").value
