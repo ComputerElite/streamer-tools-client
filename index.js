@@ -80,6 +80,7 @@ function NotifyClient() {
         })
         if(answer == 0) {
             config.ip = ipInQueue;
+            saveConfig();
             dialog.showMessageBoxSync(mainWindow, {
                 "message": "IP set to " + config.ip,
                 "buttons": ["OK"],
