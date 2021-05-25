@@ -12,8 +12,8 @@ var shell = require('shelljs');
 const { clipboard } = require('electron')
 const  { networkInterfaces }  = require('os')
 const { dialog } = require('electron')
-
-const {app, BrowserWindow} = electron;
+const { app } = require('electron');
+const  {BrowserWindow } = require('electron')
 
 let mainWindow;
 
@@ -24,7 +24,7 @@ if(fs.existsSync(path.join(__dirname, "config.json"))) {
 } else {
     config = {
         "ip": "",
-        "intervall": 100
+        "interval": 100
     }
 }
 
@@ -106,7 +106,7 @@ setInterval(() => {
             //console.log(json)
         })
     })
-}, config.intervall);
+}, config.interval);
 
 
 
@@ -227,6 +227,7 @@ app.on('ready', () => {
         protocol: 'file',
         slashes: true
     }))
+
 })
 
 api.use(bodyParser.urlencoded({ extended: true }));
@@ -248,10 +249,12 @@ api.post(`/api/download`, async function(req, res) {
 })
 
 api.post(`/api/postip`, async function(req, res) {
-    config.ip = req.body.ip
-    saveConfig()
-    console.log("ip set to: " + config.ip)
-
+    var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])&/g
+    if(req.body.ip != null && ipReg.test(req.body.ip)) {
+        config.ip = req.body.ip
+        saveConfig()
+        console.log("ip set to: " + config.ip)
+    }
 })
 
 api.post(`/api/copytoclipboard`, async function(req, res) {
@@ -259,17 +262,17 @@ api.post(`/api/copytoclipboard`, async function(req, res) {
     console.log("wrote " + req.body.text + " to clipboard")
 })
 
-api.post(`/api/postintervall`, async function(req, res) {
-    config.intervall = req.body.intervall
+api.post(`/api/postinterval`, async function(req, res) {
+    config.interval = req.body.interval
     saveConfig()
-    console.log("intervall set to: " + config.intervall)
+    console.log("interval set to: " + config.interval)
 })
 
 api.get(`/api/getip`, async function(req, res) {
     res.json({"ip": config.ip})
 })
-api.get(`/api/getintervall`, async function(req, res) {
-    res.json({"intervall": config.intervall})
+api.get(`/api/getinterval`, async function(req, res) {
+    res.json({"interval": config.interval})
 })
 
 api.get(`/api/getOverlay`, async function(req, res) {
@@ -325,7 +328,7 @@ api.get(`/api/overlays`, async function(req, res) {
 api.get(`/api/raw`, async function(req, res) {
     var Url = new URL("http://localhost:501" + req.url)
     var ip = Url.searchParams.get("ip")
-    if(ip != null && ip != "") {
+    if(ip != null && ip != "" && ip != "null" && Url.searchParams.get("nosetip") == null) {
         config.ip = ip;
     }
     res.header("Access-Control-Allow-Origin", "*")
