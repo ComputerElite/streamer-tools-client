@@ -21,6 +21,10 @@ jobs:
           
       - name: list dir
         run: dir
+        
+      - name: Get version
+        id: getversion
+        run: echo '::set-output name=v::$(node -p "require(`./package.json`).version")'
 
       - name: Pack
         run: npm pack
@@ -29,5 +33,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: streamer-tools-client.tgz
-          path: ./streamer-tools-client-1.0.0.tgz
+          path: ./streamer-tools-client-${{ steps.getversion.outputs.v }}.tgz
           if-no-files-found: error
