@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Home - Streamer tools client</title>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+        <link href="standard.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+        <div style="display: flex;">
+            <div class="sidebar" style="flex: 0;">
+                <div class="sidebarItemSelected" href="#" onclick='fetch("http://localhost:501/windows/home")'>
+                    Home
+                </div>
+                <div class="sidebarItem" onclick='fetch("http://localhost:501/windows/overlays")'>
+                    Overlays
+                </div>
+                <div class="sidebarItem" onclick='fetch("http://localhost:501/windows/downloads")'>
+                    Downloads
+                </div>
+            </div>
+            <div class="content" style="flex: 1;">
+                <div style="text-align: center; font-size: 24px; margin-bottom: 10px;">
+                    Streamer Tools Client
+                </div>
+                <div style="text-align: center; font-size: 18px;">
+                    IP <input type='text' id="ip">
+                    <br/>
+
+                    <input type='button' value="Save IP" id="saveIp">
+                    <br/>
+                    <div style="font-size: 14px; margin-left: 10px; margin-top: 15px;">
+                        If the overlays seem to be frozen then restart both Beat Saber and this Client and make sure you set the right IP adress.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </body>
+    <script>
+        fetch("http://localhost:501/api/getip").then((res) => {
+            res.json().then((json) => {
+                console.log(json.ip)
+                document.getElementById("ip").value = json.ip
+            });
+        })
+
+        document.getElementById("saveIp").onclick = function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:501/api/postip", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "ip": document.getElementById("ip").value
+            }));
+        }
+    </script>
+</html>

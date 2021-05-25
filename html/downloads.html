@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Downloads - Streamer tools client</title>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+        <link href="standard.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+        <div style="display: flex;">
+            <div class="sidebar" style="flex: 0;">
+                <div class="sidebarItem" href="#" onclick='fetch("http://localhost:501/windows/home")'>
+                    Home
+                </div>
+                <div class="sidebarItem" onclick='fetch("http://localhost:501/windows/overlays")'>
+                    Overlays
+                </div>
+                <div class="sidebarItemSelected" onclick='fetch("http://localhost:501/windows/downloads")'>
+                    Downloads
+                </div>
+            </div>
+            <div class="content" style="flex: 1;">
+                <div style="text-align: center; font-size: 24px; margin-bottom: 10px;">
+                    Streamer Tools Client - Overlay downloads
+                </div>
+                <div style="text-align: center; font-size: 18px;">
+                    <div style="margin-top: 20px;">
+                        <div style="font-size: 22px;">Available Overlays:</div>
+                        <br/>
+                        <div id="overlays">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        UpdateAll();
+        function UpdateAll() {
+            fetch("http://localhost:501/api/overlays").then((res) => {
+                res.json().then((json) => {
+                    document.getElementById("overlays").innerHTML = ""
+                    json.forEach(overlay => {
+                        document.getElementById("overlays").innerHTML += FormatToHTML(overlay)
+                    })
+                    if(document.getElementById("overlays").innerHTML == "") document.getElementById("overlays").innerHTML = "Please download overlays"
+                });
+            })
+        }
+
+        function FormatToHTML(overlay) {
+            var link = ""
+            overlay.downloads.forEach(download => {
+                if(download.IsEntryPoint) {
+                    link = download.URL
+                }
+            })
+            return `<div style="margin-bottom: 30px;">${overlay.Name}:<br/><input style="margin-bottom: 10px;" onclick='Download("${overlay.Name}")' type='button' value="${overlay.downloaded ? "download again" : "download"}"><br/><iframe width=90% height="500px" src="${link}"></iframe></div>`
+        }
+
+        function Download(name) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:501/api/download", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "Name": name
+            }));
+        }
+    </script>
+</html>
