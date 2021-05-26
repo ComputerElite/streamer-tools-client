@@ -320,7 +320,7 @@ if(config.dcrpe) {
         songStart.setSeconds(songStart.getSeconds() - raw.time)
         var songEnd = new Date();
         songEnd.setSeconds(songEnd.getSeconds() - raw.time + raw.endTime)
-        var smallText = "Presence by streamer tools client by ComputerElite"
+        var smallText = "Presence by streamer tools,\nclient by ComputerElite"
         switch(raw.location) {
             case 1:
                 // Solo song
