@@ -16,6 +16,7 @@
     "discord-rich-presence": "0.0.8",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
+    "net": "^1.0.2",
     "node-fetch": "^2.6.1",
     "shelljs": "^0.8.4"
   },

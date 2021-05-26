@@ -14,10 +14,12 @@ const  { networkInterfaces }  = require('os')
 const { dialog } = electron
 const { app } = electron
 const  {BrowserWindow } = electron
-const dcrp = require('discord-rich-presence')('846852034330492928');
+const net = require('net');
+const { truncate } = require('fs/promises');
 
 const MulticastPort = 53500
 const MulticastIp = "232.0.53.5"
+const SocketPort = 53501
 const HttpPort = 53502
 const ApiPort = 53510
 /*
@@ -116,11 +118,41 @@ GetLocalIPs().forEach(ip => {
 
 var lastError = ""
 
-setInterval(() => {
+var connected = false
+
+function fetchData() {
+    if(connected) return;
     fetch("http://" + config.ip + ":" + HttpPort).then((res) => {
         res.json().then((json) => {
             raw = json
-            //console.log(json)
+
+            console.log("connecting with Quest")
+            var socket = net.Socket();
+            try {
+                connected = true
+                socket.connect(SocketPort, config.ip, function() {
+                    console.log("connected")
+                });
+    
+                socket.on('close', function() {
+                    console.log('Lost connection with Quest');
+                    connected = false;
+                });
+    
+                socket.on('data', async function(data){
+                    try {
+                        raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
+                    } catch (err) {
+                        if(lastError != err.toString()) {
+                            lastError = err.toString();
+                            console.error("couldn't read/parse data from socket: " + lastError)
+                        }
+                    }
+                })
+            } catch {
+                connected = false;
+            }
+            
         })
     }).catch((err) => {
         if(lastError != err.toString()) {
@@ -128,6 +160,10 @@ setInterval(() => {
             console.error("unable to connect to quest: " + lastError)
         }
     })
+}
+
+setInterval(() => {
+    fetchData()
 }, config.interval);
 
 
@@ -221,18 +257,114 @@ function downloadFile(url, dest) {
         });
     });
 }
+if(config.dcrpe) {
+    console.log("enabling dcrp")
+    const dcrp = require('discord-rich-presence')('846852034330492928')
 
-setInterval(() => {
-    UpdatePresence();
-}, 1000);
+    setInterval(() => {
+        UpdatePresence();
+    }, 1000);
 
-function UpdatePresence() {
-    dcrp.updatePresence({
-        state: "Score: " + raw["score"],
-        details: raw["levelName"] + " - " + raw["songAuthor"],
-        instance: true
-    })
+    function intToDiff(diff) {
+        switch (diff)
+        {
+            case 0:
+                return "Easy";
+            case 1:
+                return "Normal";
+            case 2:
+                return "Hard";
+            case 3:
+                return "Expert";
+            case 4:
+                return "Expert +";
+        }
+        return "Unknown";
+    }
+
+    function UpdatePresence() {
+        // Application
+        // details
+        // State
+        var songStart = new Date();
+        songStart.setSeconds(songStart.getSeconds() - raw.time)
+        var songEnd = new Date();
+        songEnd.setSeconds(songEnd.getSeconds() - raw.time + raw.endTime)
+        var smallText = "presence by streamer tools client by ComputerElite"
+        switch(raw.location) {
+            case 1:
+                // Solo song
+                dcrp.updatePresence({
+                    state: raw.songAuthor + " [" + raw.levelAuthor + "]",
+                    details: raw["levelName"] + " (" + intToDiff(raw.difficulty) + ")",
+                    startTimestamp: songStart,
+                    endTimestamp: songEnd,
+                    smallImageText: smallText,
+                    instance: true
+                })
+                break;
+            case 2:
+                // mp song
+                dcrp.updatePresence({
+                    state: raw.songAuthor + " [" + raw.levelAuthor + "]",
+                    details: "[MP] " + raw["levelName"] + " (" + intToDiff(raw.difficulty) + ")",
+                    startTimestamp: songStart,
+                    endTimestamp: songEnd,
+                    smallImageText: smallText,
+                    instance: true
+                })
+                break;
+            case 3:
+                // tutorial
+                dcrp.updatePresence({
+                    state: "learning how to beat saber",
+                    details: "In tutorial",
+                    smallImageText: smallText,
+                    instance: true
+                })
+                break;
+            case 4:
+                // campaign
+                dcrp.updatePresence({
+                    state: raw.songAuthor + " [" + raw.levelAuthor + "]",
+                    details: "[Campaign] " + raw["levelName"] + " (" + intToDiff(raw.difficulty) + ")",
+                    startTimestamp: songStart,
+                    endTimestamp: songEnd,
+                    smallImageText: smallText,
+                    instance: true
+                })
+                break;
+            case 4:
+                // mp lobby
+                dcrp.updatePresence({
+                    state: raw.players + "/" + raw.maxPlayers + " players",
+                    details: "In multiplayer lobby",
+                    smallImageText: smallText,
+                    instance: true
+                })
+                break;
+            default:
+                if(raw.location == 0) {
+                    dcrp.updatePresence({
+                        state: "Selecting songs",
+                        details: "In menu",
+                        smallImageText: smallText,
+                        instance: true
+                    })
+                } else {
+                    dcrp.updatePresence({
+                        state: "Quest might not be conntected",
+                        details: "No info available",
+                        smallImageText: smallText,
+                        instance: true
+                    })
+                }
+                
+                break;
+        }
+    }
 }
+
 
 function downloadOverlay(overlay) {
     console.log("Downloading " + overlay.Name)
@@ -305,9 +437,17 @@ api.post(`/api/postinterval`, async function(req, res) {
     saveConfig()
     console.log("interval set to: " + config.interval)
 })
+api.post(`/api/postdcrpe`, async function(req, res) {
+    config.dcrpe = req.body.dcrpe
+    saveConfig()
+    console.log("dcrpe set to: " + config.dcrpe)
+})
 
 api.get(`/api/getip`, async function(req, res) {
     res.json({"ip": config.ip})
+})
+api.get(`/api/getdcrpe`, async function(req, res) {
+    res.json({"dcrpe": config.dcrpe})
 })
 api.get(`/api/getinterval`, async function(req, res) {
     res.json({"interval": config.interval})

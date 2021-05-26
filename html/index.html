@@ -32,6 +32,9 @@
                     <div style="font-size: 14px; margin-left: 10px; margin-top: 15px;">
                         If the overlays seem to be frozen then restart both Beat Saber and this Client and make sure you set the right IP address.
                     </div>
+                    <table style="padding: 10px; width: 400px; text-align: center;">
+                        <tr><td>Discord rich presence enabled (restart application for changes to take effect)</td><td><input type="checkbox" id="dcrp" onchange="SetDcrp()"></td>
+                    </table>
                 </div>
             </div>
         </div>
@@ -43,8 +46,22 @@
             res.json().then((json) => {
                 console.log(json.ip)
                 if(json.ip != null && json.ip != "null") document.getElementById("ip").value = json.ip
+                fetch("http://localhost:53510/api/getdcrpe").then((res2) => {
+                    res2.json().then((json2) => {
+                        document.getElementById("dcrp").checked = json2.dcrpe
+                    });
+                })
             });
         })
+
+        function SetDcrp() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:53510/api/postdcrpe", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "dcrpe": document.getElementById("dcrp").checked
+            }));
+        }
 
         document.getElementById("saveIp").onclick = function() {
             console.log("\"" + document.getElementById("ip").value + "\"")
