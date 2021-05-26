@@ -143,10 +143,12 @@ function fetchData() {
                     try {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
                     } catch (err) {
+                        /*
                         if(lastError != err.toString()) {
                             lastError = err.toString();
                             console.error("couldn't read/parse data from socket: " + lastError)
                         }
+                        */
                     }
                 })
             } catch {
@@ -282,6 +284,10 @@ if(config.dcrpe) {
         return "Unknown";
     }
 
+    function trim(input) {
+        return input.toFixed(2)
+    }
+
     function UpdatePresence() {
         // Application
         // details
@@ -290,7 +296,7 @@ if(config.dcrpe) {
         songStart.setSeconds(songStart.getSeconds() - raw.time)
         var songEnd = new Date();
         songEnd.setSeconds(songEnd.getSeconds() - raw.time + raw.endTime)
-        var smallText = "presence by streamer tools client by ComputerElite"
+        var smallText = "Presence by streamer tools client by ComputerElite"
         switch(raw.location) {
             case 1:
                 // Solo song
@@ -300,6 +306,9 @@ if(config.dcrpe) {
                     startTimestamp: songStart,
                     endTimestamp: songEnd,
                     smallImageText: smallText,
+                    smallImageKey: 'stc',
+                    largeImageText: 'Score: ' + raw.score + " acc: " + trim(raw.accuracy * 100) + " %",
+                    largeImageKey: 'bs',
                     instance: true
                 })
                 break;
@@ -311,6 +320,9 @@ if(config.dcrpe) {
                     startTimestamp: songStart,
                     endTimestamp: songEnd,
                     smallImageText: smallText,
+                    smallImageKey: 'stc',
+                    largeImageText: 'Score: ' + raw.score + " acc: " + trim(raw.accuracy * 100) + " %",
+                    largeImageKey: 'bs',
                     instance: true
                 })
                 break;
@@ -320,6 +332,9 @@ if(config.dcrpe) {
                     state: "learning how to beat saber",
                     details: "In tutorial",
                     smallImageText: smallText,
+                    smallImageKey: 'stc',
+                    largeImageText: 'Score: ' + raw.score + " acc: " + trim(raw.accuracy * 100) + " %",
+                    largeImageKey: 'bs',
                     instance: true
                 })
                 break;
@@ -331,6 +346,9 @@ if(config.dcrpe) {
                     startTimestamp: songStart,
                     endTimestamp: songEnd,
                     smallImageText: smallText,
+                    smallImageKey: 'stc',
+                    largeImageText: 'Score: ' + raw.score + " acc: " + trim(raw.accuracy * 100) + " %",
+                    largeImageKey: 'bs',
                     instance: true
                 })
                 break;
@@ -340,6 +358,8 @@ if(config.dcrpe) {
                     state: raw.players + "/" + raw.maxPlayers + " players",
                     details: "In multiplayer lobby",
                     smallImageText: smallText,
+                    smallImageKey: 'stc',
+                    largeImageKey: 'bs',
                     instance: true
                 })
                 break;
@@ -349,6 +369,8 @@ if(config.dcrpe) {
                         state: "Selecting songs",
                         details: "In menu",
                         smallImageText: smallText,
+                        smallImageKey: 'stc',
+                        largeImageKey: 'bs',
                         instance: true
                     })
                 } else {
@@ -356,6 +378,8 @@ if(config.dcrpe) {
                         state: "Quest might not be conntected",
                         details: "No info available",
                         smallImageText: smallText,
+                        smallImageKey: 'stc',
+                        largeImageKey: 'bs',
                         instance: true
                     })
                 }
@@ -387,6 +411,8 @@ function downloadOverlay(overlay) {
 
 app.on('ready', () => {
     mainWindow = new BrowserWindow({});
+
+    mainWindow.setIcon(path.join(__dirname, "assets", "stc.png"))
 
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "html", "index.html"),
