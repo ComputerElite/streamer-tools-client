@@ -1,14 +1,14 @@
-name: Build/release
+name: Build Windows
 
-on: push
+on: 
+  push:
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
 
 jobs:
   release:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [windows-latest]
+    runs-on: windows-latest
 
     steps:
       - name: Check out Git repository
