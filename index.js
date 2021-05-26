@@ -16,6 +16,7 @@ const { app } = electron
 const  {BrowserWindow } = electron
 const net = require('net');
 const { truncate } = require('fs/promises');
+const { start } = require('repl');
 
 const MulticastPort = 53500
 const MulticastIp = "232.0.53.5"
@@ -121,7 +122,9 @@ var lastError = ""
 var connected = false
 
 function fetchData() {
+    console.log("start")
     if(connected) return;
+    console.log("trying to connect")
     fetch("http://" + config.ip + ":" + HttpPort).then((res) => {
         res.json().then((json) => {
             raw = json
@@ -157,6 +160,7 @@ function fetchData() {
             
         })
     }).catch((err) => {
+        console.log("unable to connect to quest")
         if(lastError != err.toString()) {
             lastError = err.toString();
             console.error("unable to connect to quest: " + lastError)
