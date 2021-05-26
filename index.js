@@ -30,7 +30,7 @@ Ports:
 
     local api: 53510
 IP:
-    Multicast: 
+    Multicast: 232.0.53.5
 */
 
 let mainWindow;

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder",
-    "dist": "electron-builder -l --publish never"
+    "dist": "electron-builder -w --publish never"
   },
   "author": "ComputerElite",
   "license": "GPL-3.0",
