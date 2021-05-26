@@ -120,12 +120,15 @@ GetLocalIPs().forEach(ip => {
 var lastError = ""
 
 var connected = false
+var fetching = false;
 
 function fetchData() {
     console.log("start")
-    if(connected) return;
+    if(connected || fetching) return;
+    fetching = true;
     console.log("trying to connect")
     fetch("http://" + config.ip + ":" + HttpPort).then((res) => {
+        fetching = false;
         res.json().then((json) => {
             raw = json
 
@@ -160,6 +163,7 @@ function fetchData() {
             
         })
     }).catch((err) => {
+        fetching = false;
         console.log("unable to connect to quest")
         if(lastError != err.toString()) {
             lastError = err.toString();
@@ -169,7 +173,19 @@ function fetchData() {
 }
 
 setInterval(() => {
-    fetchData()
+    //fetchData()
+
+    // old
+    fetch("http://" + config.ip + ":" + HttpPort).then((res) => {
+        res.json().then((json) => {
+            raw = json
+        })
+    }).catch((err) => {
+        if(lastError != err.toString()) {
+            lastError = err.toString();
+            console.error("unable to connect to quest: " + lastError)
+        }
+    })
 }, config.interval);
 
 
