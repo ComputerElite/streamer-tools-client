@@ -34,6 +34,7 @@
                         <tr><td>Don't show energy bar</td><td><input type="checkbox" id="dontenergy" onchange="UpdateAll()"></td>
                         <tr><td>Don't show mp code if shown in game</td><td><input type="checkbox" id="dontmpcode" onchange="UpdateAll()"></td>
                         <tr><td>Always show mp code if shown in game</td><td><input type="checkbox" id="alwaysmpcode" onchange="UpdateAll()"></td>
+                        <tr><td>Update overlay on song select</td><td><input type="checkbox" id="alwaysupdate" onchange="UpdateAll()"></td>
                     </table>
                     <div style="margin-top: 20px;">
                         <div style="font-size: 22px;">Overlays:</div>
@@ -81,7 +82,7 @@
         }
 
         function constuctParameters() {
-            return "&ip=" + document.getElementById("ip").value + "&updaterate=" + document.getElementById("rate").value + "&decimals=" + document.getElementById("decimals").value + (document.getElementById("dontenergy").checked ? "&dontshowenergy" : "") + (document.getElementById("dontmpcode").checked ? "&dontshowmpcode" : "") + (document.getElementById("alwaysmpcode").checked ? "&alwaysshowmpcode" : "") + (document.getElementById("custom").value != "" ? "&customtext=" + document.getElementById("custom").value : "") + "&nosetip"
+            return "&ip=" + document.getElementById("ip").value + "&updaterate=" + document.getElementById("rate").value + "&decimals=" + document.getElementById("decimals").value + (document.getElementById("dontenergy").checked ? "&dontshowenergy" : "") + (document.getElementById("dontmpcode").checked ? "&dontshowmpcode" : "") + (document.getElementById("alwaysmpcode").checked ? "&alwaysshowmpcode" : "") + (document.getElementById("custom").value != "" ? "&customtext=" + document.getElementById("custom").value : "") + (document.getElementById("alwaysupdate").checked ? "&alwaysupdate" : "") + "&nosetip"
         }
 
         function FormatToHTML(overlay) {
