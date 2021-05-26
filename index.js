@@ -123,10 +123,8 @@ var connected = false
 var fetching = false;
 
 function fetchData() {
-    console.log("start")
     if(connected || fetching) return;
     fetching = true;
-    console.log("trying to connect")
     fetch("http://" + config.ip + ":" + HttpPort).then((res) => {
         fetching = false;
         res.json().then((json) => {
@@ -173,11 +171,16 @@ function fetchData() {
 }
 
 setInterval(() => {
-    //fetchData()
+    fetchData()
 
     // old
-    fetch("http://" + config.ip + ":" + HttpPort).then((res) => {
+    /*
+    fetch("http://" + config.ip + ":" + HttpPort, {
+        method: 'GET',
+        headers: { 'user-agent': '1.0' }
+    }).then((res) => {
         res.json().then((json) => {
+            console.log("fetched")
             raw = json
         })
     }).catch((err) => {
@@ -186,6 +189,7 @@ setInterval(() => {
             console.error("unable to connect to quest: " + lastError)
         }
     })
+    */
 }, config.interval);
 
 
