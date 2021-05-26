@@ -282,11 +282,16 @@ api.post(`/api/download`, async function(req, res) {
 })
 
 api.post(`/api/postip`, async function(req, res) {
-    var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])&/g
-    if(req.body.ip != null && ipReg.test(req.body.ip)) {
-        config.ip = req.body.ip
+    var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
+    
+    var ip = req.body.ip.toString();
+    console.log("\"" + ip + "\"")
+    if(ipReg.test(ip)) {
+        config.ip = ip
         saveConfig()
         console.log("ip set to: " + config.ip)
+    } else {
+        console.log("ip (" + ip + ") not valid")
     }
 })
 
