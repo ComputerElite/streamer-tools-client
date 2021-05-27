@@ -5,7 +5,6 @@ const fs = require('fs')
 const express = require('express')
 const api = express();
 const bodyParser = require("body-parser");
-const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
 var shell = require('shelljs');
@@ -15,9 +14,6 @@ const { dialog } = electron
 const { app } = electron
 const  {BrowserWindow } = electron
 const net = require('net');
-const { truncate } = require('fs/promises');
-const { start } = require('repl');
-const { parse } = require('path');
 
 const MulticastPort = 53500
 const MulticastIp = "232.0.53.5"
@@ -146,6 +142,21 @@ var lastError = ""
 var connected = false
 var fetching = false;
 
+var checkData = false;
+var sent = false;
+
+function checkSending() {
+    if(checkData) return;
+    checkData = true;
+    return new Promise((resolve, reject) => {
+        sent = false;
+        setTimeout(() => {
+            checkData = false;
+            resolve(sent);
+        }, 2000);
+    })
+}
+
 function fetchData() {
     if(connected || fetching) return;
     fetching = true;
@@ -168,6 +179,18 @@ function fetchData() {
                 });
     
                 socket.on('data', async function(data){
+                    sent = true;
+                    try {
+                        checkSending().then((res) => {
+                            console.log("Data sent in last 2 seconds: " + res)
+                            if(!res) {
+                                console.log("Destroying socket to reconnect")
+                                socket.destroy();
+                                return;
+                            }
+                        })
+                    } catch {}
+                    
                     try {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
                     } catch (err) {
