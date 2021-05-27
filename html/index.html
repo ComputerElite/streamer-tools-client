@@ -17,6 +17,9 @@
                 <div class="sidebarItem" onclick='fetch("http://localhost:53510/windows/downloads")'>
                     Downloads
                 </div>
+                <div class="sidebarItem" onclick='fetch("http://localhost:53510/windows/srm")'>
+                    Song Requests
+                </div>
             </div>
             <div class="content" style="flex: 1;">
                 <div style="text-align: center; font-size: 24px; margin-bottom: 10px;">
@@ -34,7 +37,13 @@
                     </div>
                     <table style="padding: 10px; width: 400px; text-align: center;">
                         <tr><td>Discord rich presence enabled (restart application for changes to take effect)</td><td><input type="checkbox" id="dcrp" onchange="SetDcrp()"></td>
+                        <tr><td>Enable twitch bot (restart application for changes to take effect)</td><td><input type="checkbox" id="te" onchange="SetBot()"></td>
+                        <tr><td>Twitch bot token (restart application for changes to take effect)</td><td><input type='password' id="tt" onchange="SetBot()"></td>
+                        <tr><td>Twitch channel name (restart application for changes to take effect)</td><td><input type="text" id="tcn" onchange="SetBot()"></td>
                     </table>
+                    <div style="font-size: 12px;">
+                        You can get a twitch bot token by:<br/>  a) <a href="https://twitchapps.com/tmi/">creating a token for you own twitch account</a><br/>  b) <a href="https://twitchapps.com/tmi/">Creating a new twitch account</a> for your bot and then <a href="https://twitchapps.com/tmi/">creating a token for your bots account account</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -42,24 +51,36 @@
     </body>
     <script>
         var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
-        fetch("http://localhost:53510/api/getip").then((res) => {
+        fetch("http://localhost:53510/api/getconfig").then((res) => {
             res.json().then((json) => {
                 console.log(json.ip)
                 if(json.ip != null && json.ip != "null") document.getElementById("ip").value = json.ip
-                fetch("http://localhost:53510/api/getdcrpe").then((res2) => {
-                    res2.json().then((json2) => {
-                        document.getElementById("dcrp").checked = json2.dcrpe
-                    });
-                })
+                document.getElementById("dcrp").checked = json.dcrpe
+                document.getElementById("te").checked = json.twitch.enabled
+                document.getElementById("tt").value = json.twitch.token
+                document.getElementById("tcn").value = json.twitch.channelname
             });
         })
 
         function SetDcrp() {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:53510/api/postdcrpe", true);
+            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "dcrpe": document.getElementById("dcrp").checked
+            }));
+        }
+
+        function SetBot() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "twitch": {
+                    "enabled": document.getElementById("te").checked,
+                    "token": document.getElementById("tt").value,
+                    "channelname": document.getElementById("tcn").value
+                }
             }));
         }
 
@@ -70,7 +91,7 @@
                 return
             }
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:53510/api/postip", true);
+            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "ip": document.getElementById("ip").value

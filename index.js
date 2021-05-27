@@ -17,6 +17,7 @@ const  {BrowserWindow } = electron
 const net = require('net');
 const { truncate } = require('fs/promises');
 const { start } = require('repl');
+const { parse } = require('path');
 
 const MulticastPort = 53500
 const MulticastIp = "232.0.53.5"
@@ -45,6 +46,10 @@ if(fs.existsSync(path.join(__dirname, "config.json"))) {
         "ip": "",
         "interval": 100
     }
+}
+
+if(!fs.existsSync(path.join(__dirname, "covers"))) {
+    shell.mkdir(path.join(__dirname, "covers"))
 }
 
 let raw = {}
@@ -242,7 +247,6 @@ function saveConfig() {
 
 function writeToFile(file, contents) {
     fs.writeFile(file, contents, err => {
-        console.log(err)
     })
 }
 
@@ -250,8 +254,18 @@ function writeToFile(file, contents) {
 function downloadFile(url, dest) {
     return new Promise((resolve, reject) => {
         const file = fs.createWriteStream(dest, { flags: "wx" });
+        var parsed = new URL(url)
 
-        const request = https.get(url, response => {
+        const options = {
+            hostname: parsed.hostname,
+            port: parsed.port,
+            path: parsed.pathname,
+            method: 'GET',
+            headers: {
+                'User-Agent': 'streamer-tools-client/1.0'
+            }
+          }
+        const request = https.get(options, response => {
             if (response.statusCode === 200) {
                 response.pipe(file);
             } else {
@@ -283,7 +297,9 @@ function downloadFile(url, dest) {
         });
     });
 }
-if(config.dcrpe) {
+
+//////////////////////////////////////Discord rich presence///////////////////////////////////////
+if(config.dcrpe != undefined && config.dcrpe) {
     console.log("enabling dcrp")
     const dcrp = require('discord-rich-presence')('846852034330492928')
 
@@ -414,6 +430,82 @@ if(config.dcrpe) {
 }
 
 
+/////////////////// Twitch bot////////////////////////
+function BSaverRequest(key) {
+    return new Promise((resolve, reject) => {
+        console.log("requesting")
+        fetch("https://beatsaver.com/api/maps/detail/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0' }}).then((result) => {
+            result.json().then((json) => {
+                resolve(json)
+            }).catch((err) => {
+                console.log("request failed")
+                resolve("error")
+            })
+            
+        }).catch((err) => {
+            resolve("error")
+        })
+    })
+    
+}
+
+var srm = []
+
+if(config.twitch != undefined && config.twitch.token != undefined && config.twitch.channelname != undefined && config.twitch.enabled) {
+    const tmi = require('tmi.js');
+
+    const client = new tmi.Client({
+    options: { debug: true },
+    connection: {
+        secure: true,
+        reconnect: true
+    },
+    identity: {
+        username: 'streamer-tools-client',
+        password: config.twitch.token
+    },
+    channels: [config.twitch.channelname]
+    });
+
+    client.connect();
+
+    client.on('message', (channel, tags, message, self) => {
+    // Ignore echoed messages.
+    if(self) return;
+
+    console.log("recived message via twitch: [" + channel + "] <" + tags.username + "> " + message)
+    if(message.toLowerCase().startsWith("!bsr")) {
+        console.log("bsr")
+        var msg = message.split(" ");
+        if(msg.length >= 2) {
+            var key = msg[1]
+            BSaverRequest(key).then((res) => {
+                if(res == "error") {
+                    client.say(channel, `@${tags.username} Song ${key} doesn't exist. Please check BeatSaver for valid songs.`)
+                } else {   
+                    console.log(`@${tags.username} requested ${res.name} (${key})`)
+                    client.say(channel, `@${tags.username} requested ${res.name} (${key})`)
+                    if(!fs.existsSync(path.join(__dirname, "covers", res.key + ".png"))) {
+                        console.log("downloading cover of song " + res.key)
+                        downloadFile(`https://beatsaver.com${res.coverURL}`, path.join(__dirname, "covers", res.key + ".png"))
+                    }
+                    var request = {
+                        "name": res.name,
+                        "key": res.key,
+                        "coverURL": `http://localhost:${ApiPort}/covers/${res.key}.png`
+                    }
+                    if(!srm.includes(request)) srm.push(request)
+                }
+            })
+            
+        }
+    }
+    });
+}
+
+
+/////////////////////////////////////////////////////////////////////
+
 function downloadOverlay(overlay) {
     console.log("Downloading " + overlay.Name)
     var dir = path.join(__dirname, "overlays", overlay.Name)
@@ -463,18 +555,42 @@ api.post(`/api/download`, async function(req, res) {
     }))
 })
 
-api.post(`/api/postip`, async function(req, res) {
-    var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
+api.post(`/api/postconfig`, async function(req, res) {
+    if(req.body.ip != undefined) {
+        var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
     
-    var ip = req.body.ip.toString();
-    console.log("\"" + ip + "\"")
-    if(ipReg.test(ip)) {
-        config.ip = ip
-        saveConfig()
-        console.log("ip set to: " + config.ip)
-    } else {
-        console.log("ip (" + ip + ") not valid")
+        if(ipReg.test(req.body.ip)) {
+            config.ip = req.body.ip
+            
+            console.log("ip set to: " + config.ip)
+        } else {
+            console.log("ip (" + req.body.ip + ") not valid")
+        }
     }
+    if(req.body.interval != undefined) {
+        config.interval = req.body.interval
+        console.log("interval set to: " + config.interval)
+    }
+    if(req.body.dcrpe != undefined) {
+        config.dcrpe = req.body.dcrpe
+        console.log("dcrpe set to: " + config.dcrpe)
+    }
+    if(config.twitch == undefined) {
+        config.twitch = {}
+    }
+    if(req.body.twitch.enabled != undefined) {
+        config.twitch.enabled = req.body.twitch.enabled
+        console.log("twitch.enabled set to: " + config.twitch.enabled)
+    }
+    if(req.body.twitch.token != undefined) {
+        config.twitch.token = req.body.twitch.token
+        console.log("twitch.token set to: " + config.twitch.token)
+    }
+    if(req.body.twitch.channelname != undefined) {
+        config.twitch.channelname = req.body.twitch.channelname
+        console.log("twitch.channelname set to: " + config.twitch.channelname)
+    }
+    saveConfig()
 })
 
 api.post(`/api/copytoclipboard`, async function(req, res) {
@@ -482,25 +598,8 @@ api.post(`/api/copytoclipboard`, async function(req, res) {
     console.log("wrote " + req.body.text + " to clipboard")
 })
 
-api.post(`/api/postinterval`, async function(req, res) {
-    config.interval = req.body.interval
-    saveConfig()
-    console.log("interval set to: " + config.interval)
-})
-api.post(`/api/postdcrpe`, async function(req, res) {
-    config.dcrpe = req.body.dcrpe
-    saveConfig()
-    console.log("dcrpe set to: " + config.dcrpe)
-})
-
-api.get(`/api/getip`, async function(req, res) {
-    res.json({"ip": config.ip})
-})
-api.get(`/api/getdcrpe`, async function(req, res) {
-    res.json({"dcrpe": config.dcrpe})
-})
-api.get(`/api/getinterval`, async function(req, res) {
-    res.json({"interval": config.interval})
+api.get(`/api/getconfig`, async function(req, res) {
+    res.json(config)
 })
 
 api.get(`/api/getOverlay`, async function(req, res) {
@@ -523,6 +622,10 @@ api.get(`/api/getOverlay`, async function(req, res) {
         if(success) return
     })
     if(!success) res.json({"msg": "error"})
+})
+
+api.get(`/api/requests`, async function(req, res) {
+    res.json(srm)
 })
 
 api.get(`/windows/home`, async function(req, res) {
@@ -549,6 +652,14 @@ api.get(`/windows/downloads`, async function(req, res) {
     }))
 })
 
+api.get(`/windows/srm`, async function(req, res) {
+    mainWindow.loadURL(url.format({
+        pathname: path.join(__dirname, "html", "srm.html"),
+        protocol: 'file',
+        slashes: true
+    }))
+})
+
 api.get(`/api/overlays`, async function(req, res) {
     res.json(config.overlays)
 })
@@ -564,5 +675,6 @@ api.get(`/api/raw`, async function(req, res) {
 })
 
 api.use("/overlays", express.static(path.join(__dirname, "overlays")))
+api.use("/covers", express.static(path.join(__dirname, "covers")))
 
 api.listen(ApiPort)

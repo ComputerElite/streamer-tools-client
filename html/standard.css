@@ -22,14 +22,14 @@ a {
     background-color: #303235;
     padding: 10px;
     height: 100%;
-    width: 100px;
+    width: 150px;
     left: 0px;
     top: 0px;
     position: fixed;
 }
 
 .content {
-    margin-left: 110px;
+    margin-left: 160px;
 }
 
 
@@ -76,6 +76,15 @@ input[type='checkbox'] {
 }
 
 input[type='text']
+{
+    padding: 5px;
+    width: 150px;
+    border: solid #AAAAAA 1px;
+    color: #EEEEEE;
+    background-color: #202225;
+}
+
+input[type='password']
 {
     padding: 5px;
     width: 150px;

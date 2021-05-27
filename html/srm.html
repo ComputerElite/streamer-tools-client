@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Overlays - Streamer tools client</title>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+        <link href="standard.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+        <div style="display: flex;">
+            <div class="sidebar" style="flex: 0;">
+                <div class="sidebarItem" href="#" onclick='fetch("http://localhost:53510/windows/home")'>
+                    Home
+                </div>
+                <div class="sidebarItem" onclick='fetch("http://localhost:53510/windows/overlays")'>
+                    Overlays
+                </div>
+                <div class="sidebarItem" onclick='fetch("http://localhost:53510/windows/downloads")'>
+                    Downloads
+                </div>
+                <div class="sidebarItemSelected" onclick='fetch("http://localhost:53510/windows/srm")'>
+                    Song Requests
+                </div>
+            </div>
+            <div class="content" style="flex: 1;">
+                <div style="text-align: center; font-size: 24px; margin-bottom: 10px;">
+                    Streamer Tools Client - Song Requests
+                </div>
+                <div style="text-align: center; font-size: 18px;">
+                    <div style="margin-top: 20px;">
+                        <div style="font-size: 22px;">Requests:</div>
+                        <br/>
+                        <div id="requests">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </body>
+    <script>
+        UpdateAll();
+        function UpdateAll() {
+
+            fetch("http://localhost:53510/api/requests").then((res) => {
+                res.json().then((json) => {
+                    document.getElementById("requests").innerHTML = ""
+                    json.forEach(request => {
+                        document.getElementById("requests").innerHTML += FormatToHTML(request)
+                    })
+                    if(document.getElementById("requests").innerHTML == "") document.getElementById("requests").innerHTML = "No songs requested"
+                });
+            })
+        }
+
+        setInterval(() => {
+            UpdateAll();
+        }, 5000);
+
+        function FormatToHTML(request) {
+            return `<div style="margin-top: 10px; background-color: #304045; padding: 10px; margin-left: 10px; border-radius: 5px;"><img src="${request.coverURL}" width="100px" height="100px" style="display: inline; margin-right: 10px;"><div style="margin: auto; left: 20px; display: inline; position: relative;">${request.name} (${request.key})</div></div>`
+        }
+    </script>
+</html>

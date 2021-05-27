@@ -17,6 +17,9 @@
                 <div class="sidebarItem" onclick='fetch("http://localhost:53510/windows/downloads")'>
                     Downloads
                 </div>
+                <div class="sidebarItem" onclick='fetch("http://localhost:53510/windows/srm")'>
+                    Song Requests
+                </div>
             </div>
             <div class="content" style="flex: 1;">
                 <div style="text-align: center; font-size: 24px; margin-bottom: 10px;">
@@ -49,15 +52,11 @@
     </body>
     <script>
         var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
-        fetch("http://localhost:53510/api/getip").then((res) => {
+        fetch("http://localhost:53510/api/getconfig").then((res) => {
             res.json().then((json) => {
                 if(json.ip != null && json.ip != "null") document.getElementById("ip").value = json.ip
-                fetch("http://localhost:53510/api/getinterval").then((res2) => {
-                    res2.json().then((json2) => {
-                        document.getElementById("rate").value = json2.interval
-                        UpdateAll();
-                    });
-                })
+                document.getElementById("rate").value = json.interval
+                UpdateAll();
             });
         })
         function UpdateAll() {
@@ -74,10 +73,19 @@
 
         document.getElementById('rate').onchange = function() {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:53510/api/postinterval", true);
+            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "interval": document.getElementById("rate").value
+            }));
+        }
+
+        document.getElementById('ip').onchange = function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "ip": document.getElementById("ip").value
             }));
         }
 
