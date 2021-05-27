@@ -56,6 +56,12 @@
             res.json().then((json) => {
                 if(json.ip != null && json.ip != "null") document.getElementById("ip").value = json.ip
                 document.getElementById("rate").value = json.interval
+                document.getElementById("decimals").value = json.oconfig.decimals
+                document.getElementById("custom").value = json.oconfig.customtext
+                document.getElementById("dontenergy").checked = json.oconfig.dontenergy
+                document.getElementById("dontmpcode").checked = json.oconfig.dontmpcode
+                document.getElementById("alwaysmpcode").checked = json.oconfig.alwaysmpcode
+                document.getElementById("alwaysupdate").checked = json.oconfig.alwaysupdate
                 UpdateAll();
             });
         })
@@ -69,23 +75,24 @@
                     if(document.getElementById("overlays").innerHTML == "") document.getElementById("overlays").innerHTML = "Please download overlays"
                 });
             })
+            UpdateConfig();
         }
 
-        document.getElementById('rate').onchange = function() {
+        function UpdateConfig() {
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "http://localhost:53510/api/postconfig", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
-                "interval": document.getElementById("rate").value
-            }));
-        }
-
-        document.getElementById('ip').onchange = function() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify({
-                "ip": document.getElementById("ip").value
+                "interval": document.getElementById("rate").value,
+                "ip": document.getElementById("ip").value,
+                "oconfig": {
+                    "decimals": document.getElementById("decimals").value,
+                    "customtext": document.getElementById("custom").value,
+                    "dontenergy": document.getElementById("dontenergy").checked,
+                    "dontmpcode": document.getElementById("dontmpcode").checked,
+                    "alwaysmpcode": document.getElementById("alwaysmpcode").checked,
+                    "alwaysupdate": document.getElementById("alwaysupdate").checked
+                }
             }));
         }
 
@@ -95,7 +102,7 @@
 
         function FormatToHTML(overlay) {
             var link = getLink(overlay.Name)
-            return `<div style="margin-top: 20px;">${overlay.Name}:<br/><div style="font-size: 14px;">URL: <a style="font-size: 14px;" target="_blank" href="${link}">${link}</a><br/><input type='button' onclick='Copy("${link}")' style="margin-bottom: 5px;" value="Copy URL"><br/><iframe width=90% height="500px" src="${link}"></iframe></div></div>`
+            return `<div style="margin-top: 20px;">${overlay.Name}:<br/><div style="font-size: 14px;">URL: <a style="font-size: 14px;" target="_blank" href="${link}">${link}</a><br/><input type='button' onclick='Copy("${link}")' style="margin-bottom: 5px;" value="Copy URL"><br/><iframe width=85% height="500px" src="${link}"></iframe></div></div>`
         }
 
         function getLink(overlayname) {

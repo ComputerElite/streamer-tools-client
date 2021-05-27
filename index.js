@@ -43,8 +43,27 @@ if(fs.existsSync(path.join(__dirname, "config.json"))) {
     config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json")))
 } else {
     config = {
-        "ip": "",
-        "interval": 100
+        "ip": "ip",
+        "interval": "100",
+        "overlays": [
+        ],
+        "dcrpe": false,
+        "twitch": {
+            "enabled": false,
+            "token": "",
+            "channelname": "yourChannelName"
+        },
+        "oconfig": {
+            "customtext": "",
+            "decimals": "2",
+            "dontenergy": false,
+            "dontmpcode": false,
+            "alwaysmpcode": false,
+            "alwaysupdate": false
+        },
+        "srm": {
+            "requestdelay": 12000
+        }
     }
 }
 
@@ -469,37 +488,52 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
 
     client.connect();
 
-    client.on('message', (channel, tags, message, self) => {
-    // Ignore echoed messages.
-    if(self) return;
+    var lastRequest = new Date();
 
-    console.log("recived message via twitch: [" + channel + "] <" + tags.username + "> " + message)
-    if(message.toLowerCase().startsWith("!bsr")) {
-        console.log("bsr")
-        var msg = message.split(" ");
-        if(msg.length >= 2) {
-            var key = msg[1]
-            BSaverRequest(key).then((res) => {
-                if(res == "error") {
-                    client.say(channel, `@${tags.username} Song ${key} doesn't exist. Please check BeatSaver for valid songs.`)
-                } else {   
-                    console.log(`@${tags.username} requested ${res.name} (${key})`)
-                    client.say(channel, `@${tags.username} requested ${res.name} (${key})`)
-                    if(!fs.existsSync(path.join(__dirname, "covers", res.key + ".png"))) {
-                        console.log("downloading cover of song " + res.key)
-                        downloadFile(`https://beatsaver.com${res.coverURL}`, path.join(__dirname, "covers", res.key + ".png"))
+    client.on('message', (channel, tags, message, self) => {
+        if(self) return;
+
+        console.log("recived message via twitch: [" + channel + "] <" + tags.username + "> " + message)
+        if(message.toLowerCase().startsWith("!bsr")) {
+            console.log("bsr")
+            var msg = message.split(" ");
+            if(msg.length >= 2) {
+                var key = msg[1].toLowerCase()
+                for(let i = 0; i < srm.length; i++) {
+                    if(srm[i].key == key) {
+                        srm[i].requested++;
+                        client.say(channel, `@${tags.username} requested ${srm[i].name} (${srm[i].key}). It has noe been requested ${srm[i].requested}`)
+                        return
                     }
-                    var request = {
-                        "name": res.name,
-                        "key": res.key,
-                        "coverURL": `http://localhost:${ApiPort}/covers/${res.key}.png`
-                    }
-                    if(!srm.includes(request)) srm.push(request)
                 }
-            })
-            
+
+                if((new Date().getTime() - lastRequest.getTime()) < config.srm.requestdelay) {
+                    client.say(channel, `@${tags.username} ${config.twitch.channelname} only allows ${(60000 / config.srm.requestdelay)} requests per minute`)
+                    return
+                }
+                lastRequest = new Date()
+                BSaverRequest(key).then((res) => {
+                    if(res == "error") {
+                        client.say(channel, `@${tags.username} Song ${key} doesn't exist. Please check BeatSaver for valid songs.`)
+                    } else {   
+                        console.log(`@${tags.username} requested ${res.name} (${key})`)
+                        client.say(channel, `@${tags.username} requested ${res.name} (${key})`)
+                        if(!fs.existsSync(path.join(__dirname, "covers", res.key + ".png"))) {
+                            console.log("downloading cover of song " + res.key)
+                            downloadFile(`https://beatsaver.com${res.coverURL}`, path.join(__dirname, "covers", res.key + ".png"))
+                        }
+                        var request = {
+                            "name": res.name,
+                            "key": res.key,
+                            "coverURL": `http://localhost:${ApiPort}/covers/${res.key}.png`,
+                            "requested": 1
+                        }
+                        srm.unshift(request)
+                    }
+                })
+                
+            }
         }
-    }
     });
 }
 
@@ -555,41 +589,87 @@ api.post(`/api/download`, async function(req, res) {
     }))
 })
 
+// Really really chonky
 api.post(`/api/postconfig`, async function(req, res) {
+    if(config.twitch == undefined) {
+        config.twitch = {}
+    }
+    if(config.oconfig == undefined) {
+        config.oconfig = {}
+    }
     if(req.body.ip != undefined) {
         var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
     
         if(ipReg.test(req.body.ip)) {
             config.ip = req.body.ip
             
-            console.log("ip set to: " + config.ip)
+            console.log("config.ip set to: " + config.ip)
         } else {
-            console.log("ip (" + req.body.ip + ") not valid")
+            console.log("config.ip (" + req.body.ip + ") not valid")
         }
     }
     if(req.body.interval != undefined) {
         config.interval = req.body.interval
-        console.log("interval set to: " + config.interval)
+        console.log("config.interval set to: " + config.interval)
     }
     if(req.body.dcrpe != undefined) {
         config.dcrpe = req.body.dcrpe
-        console.log("dcrpe set to: " + config.dcrpe)
+        console.log("config.dcrpe set to: " + config.dcrpe)
     }
-    if(config.twitch == undefined) {
-        config.twitch = {}
+    if(req.body.srm != undefined) {
+        if(config.srm == undefined) config.srm = {}
+        if(req.body.srm.requestdelay != undefined) {
+            config.srm.requestdelay = req.body.srm.requestdelay
+            console.log("config.srm.requestdelay set to: " + config.srm.requestdelay)
+        }
     }
-    if(req.body.twitch.enabled != undefined) {
-        config.twitch.enabled = req.body.twitch.enabled
-        console.log("twitch.enabled set to: " + config.twitch.enabled)
+
+    // Twitch config
+    if(req.body.twitch != undefined) {
+        if(config.twitch == undefined) config.twitch = {}
+        if(req.body.twitch.enabled != undefined) {
+            config.twitch.enabled = req.body.twitch.enabled
+            console.log("config.twitch.enabled set to: " + config.twitch.enabled)
+        }
+        if(req.body.twitch.token != undefined) {
+            config.twitch.token = req.body.twitch.token
+            console.log("config.twitch.token set to: " + config.twitch.token)
+        }
+        if(req.body.twitch.channelname != undefined) {
+            config.twitch.channelname = req.body.twitch.channelname
+            console.log("config.twitch.channelname set to: " + config.twitch.channelname)
+        }
     }
-    if(req.body.twitch.token != undefined) {
-        config.twitch.token = req.body.twitch.token
-        console.log("twitch.token set to: " + config.twitch.token)
+
+    // overlay config
+    if(req.body.oconfig) {
+        if(config.oconfig == undefined) config.oconfig = {}
+        if(req.body.oconfig.customtext != undefined) {
+            config.oconfig.customtext = req.body.oconfig.customtext
+            console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
+        }
+        if(req.body.oconfig.decimals != undefined) {
+            config.oconfig.decimals = req.body.oconfig.decimals
+            console.log("config.oconfig.decimals set to: " + config.oconfig.decimals)
+        }
+        if(req.body.oconfig.dontenergy != undefined) {
+            config.oconfig.dontenergy = req.body.oconfig.dontenergy
+            console.log("config.oconfig.dontenergy set to: " + config.oconfig.dontenergy)
+        }
+        if(req.body.oconfig.dontmpcode != undefined) {
+            config.oconfig.dontmpcode = req.body.oconfig.dontmpcode
+            console.log("config.oconfig.dontmpcode set to: " + config.oconfig.dontmpcode)
+        }
+        if(req.body.oconfig.alwaysmpcode != undefined) {
+            config.oconfig.alwaysmpcode = req.body.oconfig.alwaysmpcode
+            console.log("config.oconfig.alwaysmpcode set to: " + config.oconfig.alwaysmpcode)
+        }
+        if(req.body.oconfig.alwaysupdate != undefined) {
+            config.oconfig.alwaysupdate = req.body.oconfig.alwaysupdate
+            console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
+        }
     }
-    if(req.body.twitch.channelname != undefined) {
-        config.twitch.channelname = req.body.twitch.channelname
-        console.log("twitch.channelname set to: " + config.twitch.channelname)
-    }
+
     saveConfig()
 })
 
