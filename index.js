@@ -411,7 +411,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
                     instance: true
                 })
                 break;
-            case 4:
+            case 5:
                 // mp lobby
                 dcrp.updatePresence({
                     state: raw.players + "/" + raw.maxPlayers + " players",
