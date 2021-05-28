@@ -539,7 +539,14 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                     if(res == "error") {
                         client.say(channel, `@${tags.username} Song ${key} doesn't exist. Please check BeatSaver for valid songs.`)
                     } else {   
+
                         console.log(`@${tags.username} requested ${res.name} (${key})`)
+                        
+                        if(config.srm != undefined && config.srm.maxsonglength != undefined && res.metadata.duration > config.srm.maxsonglength) {
+                            console.log(`Song is too long`)
+                            client.say(channel, `@${tags.username} the song you requested is ${res.metadata.duration - config.srm.maxsonglength} seconds too long. Only a maximum length of ${config.srm.maxsonglength} seconds is allowed`)
+                            return;
+                        }
                         client.say(channel, `@${tags.username} requested ${res.name} (${key})`)
                         if(!fs.existsSync(path.join(__dirname, "covers", res.key + ".png"))) {
                             console.log("downloading cover of song " + res.key)
@@ -549,7 +556,9 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                             "name": res.name,
                             "key": res.key,
                             "coverURL": `http://localhost:${ApiPort}/covers/${res.key}.png`,
-                            "requested": 1
+                            "requested": 1,
+                            "length": res.metadata.duration,
+                            "hash": res.hash
                         }
                         srm.unshift(request)
                     }
@@ -645,6 +654,10 @@ api.post(`/api/postconfig`, async function(req, res) {
             config.srm.requestdelay = req.body.srm.requestdelay
             console.log("config.srm.requestdelay set to: " + config.srm.requestdelay)
         }
+        if(req.body.srm.maxsonglength != undefined) {
+            config.srm.maxsonglength = req.body.srm.maxsonglength
+            console.log("config.srm.maxsonglength set to: " + config.srm.maxsonglength)
+        }
     }
 
     // Twitch config
@@ -699,6 +712,16 @@ api.post(`/api/postconfig`, async function(req, res) {
 api.post(`/api/copytoclipboard`, async function(req, res) {
     clipboard.writeText(req.body.text)
     console.log("wrote " + req.body.text + " to clipboard")
+})
+
+api.post(`/api/removerequest`, async function(req, res) {
+    for(let i = 0; i < srm.length; i++) {
+        if(req.body.key == srm[i].key) {
+            srm.splice(i, 1)
+            console.log("removed song request at index " + i + " (" + req.body.key + ")")
+            return;
+        }
+    }
 })
 
 api.get(`/api/getconfig`, async function(req, res) {

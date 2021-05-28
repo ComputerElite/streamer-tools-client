@@ -28,6 +28,7 @@
                 <div style="text-align: center; font-size: 18px;">
                     <table style="padding: 10px; width: 400px; text-align: center;">
                         <tr><td>Allowed requests per minute</td><td><input style="margin-top: 20px;" type='text' id="allowed" onchange="UpdateConfig()"></td></tr>
+                        <tr><td>Max song length in sec</td><td><input style="margin-top: 20px;" type='text' id="length" onchange="UpdateConfig()"></td></tr>
                     </table>
                     <div style="margin-top: 20px;">
                         <div style="font-size: 22px;">Requests:</div>
@@ -44,6 +45,7 @@
         fetch("http://localhost:53510/api/getconfig").then((res) => {
             res.json().then((json) => {
                 document.getElementById("allowed").value = (60000 / json.srm.requestdelay)
+                document.getElementById("length").value = json.srm.maxsonglength
             });
         })
 
@@ -53,7 +55,8 @@
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "srm": {
-                    "requestdelay": (60000 / document.getElementById("allowed").value)
+                    "requestdelay": (60000 / document.getElementById("allowed").value),
+                    "maxsonglength": document.getElementById("length").value
                 }
             }));
         }
@@ -74,10 +77,19 @@
 
         setInterval(() => {
             UpdateAll();
-        }, 5000);
+        }, 1000);
+
+        function Remove(key) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:53510/api/removerequest", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "key": key
+            }));
+        }
 
         function FormatToHTML(request) {
-            return `<div style="margin-top: 10px; background-color: #304045; padding: 10px; margin-left: 10px; border-radius: 5px;"><img src="${request.coverURL}" width="100px" height="100px" style="display: inline; margin-right: 10px;"><div style="margin: auto; left: 20px; display: inline; position: relative;">${request.name} (${request.key}; requested ${request.requested} times)</div></div>`
+            return `<div style="margin-top: 10px; background-color: #304045; padding: 10px; margin-left: 10px; border-radius: 5px;"><table><tr><td><img src="${request.coverURL}" width="100px" height="100px" style="display: inline; margin-right: 10px;"></td><td><div style="margin: auto; left: 20px; display: inline; position: relative;">${request.name} (${request.key}; requested ${request.requested} times)<br/>Length: ${request.length}</div></td><td><input type='button' value="Remove request" onclick="Remove('${request.key}')"></td></tr></div>`
         }
     </script>
 </html>
