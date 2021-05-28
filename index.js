@@ -58,7 +58,7 @@ if(fs.existsSync(path.join(__dirname, "config.json"))) {
             "alwaysupdate": false
         },
         "srm": {
-            "requestdelay": 12000
+            "requestdelay": 10000
         }
     }
 }
@@ -179,20 +179,9 @@ function fetchData() {
                 });
     
                 socket.on('data', async function(data){
-                    sent = true;
-                    try {
-                        checkSending().then((res) => {
-                            console.log("Data sent in last 2 seconds: " + res)
-                            if(!res) {
-                                console.log("Destroying socket to reconnect")
-                                socket.destroy();
-                                return;
-                            }
-                        })
-                    } catch {}
-                    
                     try {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
+                        sent = true;
                     } catch (err) {
                         /*
                         if(lastError != err.toString()) {
@@ -202,6 +191,20 @@ function fetchData() {
                         */
                     }
                 })
+
+                var connectionChecker = setInterval(() => {
+                    try {
+                        checkSending().then((res) => {
+                            console.log("Data sent in last 2 seconds: " + res)
+                            if(!res) {
+                                console.log("Destroying socket to reconnect")
+                                socket.destroy();
+                                clearInterval(connectionChecker)
+                                return;
+                            }
+                        })
+                    } catch {}
+                }, 1000);
             } catch {
                 connected = false;
             }
