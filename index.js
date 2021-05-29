@@ -32,8 +32,6 @@ IP:
     Multicast: 232.0.53.5
 */
 
-config.version = version;
-
 let mainWindow;
 
 let config;
@@ -65,6 +63,8 @@ if(fs.existsSync(path.join(__dirname, "config.json"))) {
         }
     }
 }
+
+config.version = version;
 
 if(!fs.existsSync(path.join(__dirname, "covers"))) {
     shell.mkdir(path.join(__dirname, "covers"))
@@ -162,6 +162,7 @@ function checkSending() {
 
 var lastid = "";
 var coverBase64 = "";
+var got404 = false;
 
 function fetchData() {
     if(connected || fetching) return;
@@ -188,14 +189,16 @@ function fetchData() {
                     try {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
                         sent = true;
-                        if(lastid != raw.id) {
+                        if(lastid != raw.id || got404) {
                             lastid = raw.id
                             fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
                                 res2.text().then((text) => {
                                     if(res2.status == 404) {
                                         coverBase64 = "";
+                                        got404 = true;
                                     } else {
-                                        coverBase64 = text == coverBase64 ? "default.png" : text;
+                                        coverBase64 = text;
+                                        got404 = false;
                                     }
                                 })
                             })
