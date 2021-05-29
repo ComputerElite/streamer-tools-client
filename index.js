@@ -189,7 +189,7 @@ function fetchData() {
                             lastid = raw.id
                             fetch("http://" + config.ip + ":" + HttpPort + "/cover").then((res2) => {
                                 res2.text().then((text) => {
-                                    coverBase64 = text;
+                                    coverBase64 = text == coverBase64 ? "default.png" : text;
                                 })
                             })
                         }
