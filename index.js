@@ -20,6 +20,7 @@ const MulticastIp = "232.0.53.5"
 const SocketPort = 53501
 const HttpPort = 53502
 const ApiPort = 53510
+const version = "1.0"
 /*
 Ports:
     Multicast: 53500
@@ -30,6 +31,8 @@ Ports:
 IP:
     Multicast: 232.0.53.5
 */
+
+config.version = version;
 
 let mainWindow;
 
@@ -210,7 +213,6 @@ function fetchData() {
                 var connectionChecker = setInterval(() => {
                     try {
                         checkSending().then((res) => {
-                            console.log("Data sent in last 2 seconds: " + res)
                             if(!res) {
                                 console.log("Destroying socket to reconnect")
                                 socket.destroy();
@@ -237,24 +239,6 @@ function fetchData() {
 
 setInterval(() => {
     fetchData()
-
-    // old
-    /*
-    fetch("http://" + config.ip + ":" + HttpPort, {
-        method: 'GET',
-        headers: { 'user-agent': '1.0' }
-    }).then((res) => {
-        res.json().then((json) => {
-            console.log("fetched")
-            raw = json
-        })
-    }).catch((err) => {
-        if(lastError != err.toString()) {
-            lastError = err.toString();
-            console.error("unable to connect to quest: " + lastError)
-        }
-    })
-    */
 }, config.interval);
 
 
@@ -322,7 +306,7 @@ function downloadFile(url, dest) {
             path: parsed.pathname,
             method: 'GET',
             headers: {
-                'User-Agent': 'streamer-tools-client/1.0'
+                'User-Agent': `streamer-tools-client/${version}`
             }
           }
         const request = https.get(options, response => {
@@ -820,7 +804,7 @@ api.get(`/api/raw`, async function(req, res) {
 
 api.get(`/api/rawcover`, async function(req, res) {
     res.header("Access-Control-Allow-Origin", "*")
-    if(coverBase64 == "") res.statusCode = 404
+    //if(coverBase64 == "") res.statusCode = 404
     res.send(coverBase64)
 })
 

@@ -84,7 +84,6 @@
         }
 
         document.getElementById("saveIp").onclick = function() {
-            console.log("\"" + document.getElementById("ip").value + "\"")
             if(!ipReg.test(document.getElementById("ip").value)) {
                 alert("IP is not valid")
                 return
