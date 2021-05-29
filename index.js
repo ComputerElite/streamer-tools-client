@@ -157,6 +157,9 @@ function checkSending() {
     })
 }
 
+var lastid = "";
+var coverBase64 = "";
+
 function fetchData() {
     if(connected || fetching) return;
     fetching = true;
@@ -182,6 +185,14 @@ function fetchData() {
                     try {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
                         sent = true;
+                        if(lastid != raw.id) {
+                            lastid = raw.id
+                            fetch("http://" + config.ip + ":" + HttpPort + "/cover").then((res2) => {
+                                res2.text().then((text) => {
+                                    coverBase64 = text;
+                                })
+                            })
+                        }
                     } catch (err) {
                         /*
                         if(lastError != err.toString()) {
@@ -801,6 +812,11 @@ api.get(`/api/raw`, async function(req, res) {
     }
     res.header("Access-Control-Allow-Origin", "*")
     res.json(raw)
+})
+
+api.get(`/api/rawcover`, async function(req, res) {
+    res.header("Access-Control-Allow-Origin", "*")
+    res.send(coverBase64)
 })
 
 api.use("/overlays", express.static(path.join(__dirname, "overlays")))
