@@ -189,7 +189,11 @@ function fetchData() {
                             lastid = raw.id
                             fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
                                 res2.text().then((text) => {
-                                    coverBase64 = text == coverBase64 ? "default.png" : text;
+                                    if(res2.status == 404) {
+                                        coverBase64 = "";
+                                    } else {
+                                        coverBase64 = text == coverBase64 ? "default.png" : text;
+                                    }
                                 })
                             })
                         }
@@ -816,6 +820,7 @@ api.get(`/api/raw`, async function(req, res) {
 
 api.get(`/api/rawcover`, async function(req, res) {
     res.header("Access-Control-Allow-Origin", "*")
+    if(coverBase64 == "") res.statusCode = 404
     res.send(coverBase64)
 })
 
