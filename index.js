@@ -733,6 +733,10 @@ api.get(`/api/getconfig`, async function(req, res) {
     res.json(config)
 })
 
+function constuctParameters() {
+    return "?ip=" + config.ip + "&updaterate=" + config.interval + "&decimals=" + config.oconfig.decimals + (config.oconfig.dontenergy ? "&dontshowenergy" : "") + (config.oconfig.dontmpcode ? "&dontshowmpcode" : "") + (config.oconfig.alwaysmpcode ? "&alwaysshowmpcode" : "") + (config.oconfig.customtext != "" ? "&customtext=" + config.oconfig.customtext : "") + (config.oconfig.alwaysupdate ? "&alwaysupdate" : "") + "&nosetip"
+}
+
 api.get(`/api/getOverlay`, async function(req, res) {
     var Url = new URL("http://localhost:" + ApiPort + req.url)
     var name = Url.searchParams.get("name")
@@ -741,10 +745,9 @@ api.get(`/api/getOverlay`, async function(req, res) {
         if(overlay.Name == name && overlay.downloaded) {
             overlay.downloads.forEach(download => {
                 if(download.IsEntryPoint) {
-                    res.redirect(url.format({
-                        pathname:"/overlays/" + overlay.Name + "/" + download.Path,
-                        query: req.query,
-                      }));
+                    var red = "http://localhost:" + ApiPort + "/overlays/" + overlay.Name + "/" + download.Path + constuctParameters()
+                    console.log("redirecting to: " + red)
+                    res.redirect(red)
                     success = true
                     return;
                 }

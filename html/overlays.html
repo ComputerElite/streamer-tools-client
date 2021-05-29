@@ -28,6 +28,7 @@
                 <div style="text-align: center; font-size: 18px;">
                     <div style="text-align: left; font-size: 14px; margin-left: 10px; margin-bottom: 20px;">Copy those URLs into a Browser widget in OBS to add them</div>
                     <div style="font-size: 22px;">Config:</div>
+                    Restart OBS for the changes to take affect in obs
                     <table style="padding: 10px; width: 400px; text-align: center;">
                         
                         <tr><td>IP</td><td><input style="margin-top: 20px;" type='text' id="ip" onchange="UpdateAll()"></td></tr>
@@ -96,17 +97,13 @@
             }));
         }
 
-        function constuctParameters() {
-            return "&ip=" + document.getElementById("ip").value + "&updaterate=" + document.getElementById("rate").value + "&decimals=" + document.getElementById("decimals").value + (document.getElementById("dontenergy").checked ? "&dontshowenergy" : "") + (document.getElementById("dontmpcode").checked ? "&dontshowmpcode" : "") + (document.getElementById("alwaysmpcode").checked ? "&alwaysshowmpcode" : "") + (document.getElementById("custom").value != "" ? "&customtext=" + document.getElementById("custom").value : "") + (document.getElementById("alwaysupdate").checked ? "&alwaysupdate" : "") + "&nosetip"
-        }
-
         function FormatToHTML(overlay) {
             var link = getLink(overlay.Name)
             return `<div style="margin-top: 20px;">${overlay.Name}:<br/><div style="font-size: 14px;">URL: <a style="font-size: 14px;" target="_blank" href="${link}">${link}</a><br/><input type='button' onclick='Copy("${link}")' style="margin-bottom: 5px;" value="Copy URL"><br/><iframe width=85% height="500px" src="${link}"></iframe></div></div>`
         }
 
         function getLink(overlayname) {
-            return `http://localhost:53510/api/getOverlay?name=${overlayname}` + constuctParameters()
+            return `http://localhost:53510/api/getOverlay?name=${overlayname}`
         }
 
         function Copy(text) {
