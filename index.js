@@ -655,6 +655,7 @@ function SyncConfigFromQuest() {
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "oconfig": {
+                    "decimals": json.decimals,
                     "dontenergy": json.dontenergy,
                     "dontmpcode": json.dontmpcode,
                     "alwaysmpcode": json.alwaysmpcode,
@@ -670,10 +671,11 @@ function SyncConfigToQuest() {
     xhr.open("POST", "http://" + config.ip + ":" + HttpPort + "/config", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify({
-        dontenergy: config.oconfig.dontenergy,
-        dontmpcode: config.oconfig.dontmpcode,
-        alwaysmpcode: config.oconfig.alwaysmpcode,
-        alwaysupdate: config.oconfig.alwaysupdate
+        "decimals": config.oconfig.decimals,
+        "dontenergy": config.oconfig.dontenergy,
+        "dontmpcode": config.oconfig.dontmpcode,
+        "alwaysmpcode": config.oconfig.alwaysmpcode,
+        "alwaysupdate": config.oconfig.alwaysupdate
     }));
 }
 
@@ -742,7 +744,7 @@ api.post(`/api/postconfig`, async function(req, res) {
             console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
         }
         if(req.body.oconfig.decimals != undefined) {
-            config.oconfig.decimals = req.body.oconfig.decimals
+            config.oconfig.decimals = parseInt(req.body.oconfig.decimals)
             console.log("config.oconfig.decimals set to: " + config.oconfig.decimals)
         }
         if(req.body.oconfig.dontenergy != undefined) {
