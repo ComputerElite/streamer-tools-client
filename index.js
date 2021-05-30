@@ -13,9 +13,11 @@ const  { networkInterfaces }  = require('os')
 const { dialog, autoUpdater } = electron
 const { app } = electron
 const  {BrowserWindow } = electron
+const  {remote } = electron
 const net = require('net');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
+const applicationDir = "."
 const MulticastPort = 53500
 const MulticastIp = "232.0.53.5"
 const SocketPort = 53501
@@ -51,8 +53,8 @@ let mainWindow;
 
 let config;
 
-if(fs.existsSync(path.join(__dirname, "config.json"))) {
-    config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json")))
+if(fs.existsSync(path.join(applicationDir, "config.json"))) {
+    config = JSON.parse(fs.readFileSync(path.join(applicationDir, "config.json")))
 } else {
     config = {
         "ip": "ip",
@@ -81,8 +83,8 @@ if(fs.existsSync(path.join(__dirname, "config.json"))) {
 
 config.version = version;
 
-if(!fs.existsSync(path.join(__dirname, "covers"))) {
-    shell.mkdir(path.join(__dirname, "covers"))
+if(!fs.existsSync(path.join(applicationDir, "covers"))) {
+    shell.mkdir(path.join(applicationDir, "covers"))
 }
 
 let raw = {}
@@ -269,7 +271,7 @@ UpdateOverlays().then(() => {
 
 function CheckOverlaysDownloaded() {
     for(let i = 0; i < config.overlays.length; i++) {
-        var dir = path.join(__dirname, "overlays", config.overlays[i].Name)
+        var dir = path.join(applicationDir, "overlays", config.overlays[i].Name)
         if(fs.existsSync(dir)) {
             config.overlays[i].downloaded = true;
         } else {
@@ -304,7 +306,7 @@ function UpdateOverlays() {
 }
 
 function saveConfig() {
-    writeToFile(path.join(__dirname, "config.json"), JSON.stringify(config))
+    writeToFile(path.join(applicationDir, "config.json"), JSON.stringify(config))
 }
 
 function writeToFile(file, contents) {
@@ -568,9 +570,9 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                             return;
                         }
                         client.say(channel, `@${tags.username} requested ${res.name} (${key})`)
-                        if(!fs.existsSync(path.join(__dirname, "covers", res.key + ".png"))) {
+                        if(!fs.existsSync(path.join(applicationDir, "covers", res.key + ".png"))) {
                             console.log("downloading cover of song " + res.key)
-                            downloadFile(`https://beatsaver.com${res.coverURL}`, path.join(__dirname, "covers", res.key + ".png"))
+                            downloadFile(`https://beatsaver.com${res.coverURL}`, path.join(applicationDir, "covers", res.key + ".png"))
                         }
                         var request = {
                             "name": res.name,
@@ -594,7 +596,7 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
 
 function downloadOverlay(overlay) {
     console.log("Downloading " + overlay.Name)
-    var dir = path.join(__dirname, "overlays", overlay.Name)
+    var dir = path.join(applicationDir, "overlays", overlay.Name)
     if(fs.existsSync(dir)) {
         fs.rmdirSync(dir, {recursive: true}, err => {
             console.log("error while deleting existing dir: " + err)
@@ -614,7 +616,7 @@ function downloadOverlay(overlay) {
 app.on('ready', () => {
     mainWindow = new BrowserWindow({});
 
-    //mainWindow.setIcon(path.join(__dirname, "assets", "stc.png"))
+    //mainWindow.setIcon(path.join(applicationDir, "assets", "stc.png"))
 
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "html", "index.html"),
@@ -865,7 +867,7 @@ api.get(`/api/rawcover`, async function(req, res) {
     res.send(coverBase64)
 })
 
-api.use("/overlays", express.static(path.join(__dirname, "overlays")))
-api.use("/covers", express.static(path.join(__dirname, "covers")))
+api.use("/overlays", express.static(path.join(applicationDir, "overlays")))
+api.use("/covers", express.static(path.join(applicationDir, "covers")))
 
 api.listen(ApiPort)
