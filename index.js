@@ -10,10 +10,11 @@ const fetch = require('node-fetch')
 var shell = require('shelljs');
 const { clipboard } = electron
 const  { networkInterfaces }  = require('os')
-const { dialog } = electron
+const { dialog, autoUpdater } = electron
 const { app } = electron
 const  {BrowserWindow } = electron
 const net = require('net');
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 const MulticastPort = 53500
 const MulticastIp = "232.0.53.5"
@@ -31,6 +32,20 @@ Ports:
 IP:
     Multicast: 232.0.53.5
 */
+
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+    const dialogOpts = {
+            type: 'info',
+            buttons: ['Restart', 'Later'],
+            title: 'Application Update',
+            message: process.platform === 'win32' ? releaseNotes : releaseName,
+            detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+        }
+
+        dialog.showMessageBox(dialogOpts).then((returnValue) => {
+        if (returnValue.response === 0) autoUpdater.quitAndInstall()
+    })
+})
 
 let mainWindow;
 
@@ -599,7 +614,7 @@ function downloadOverlay(overlay) {
 app.on('ready', () => {
     mainWindow = new BrowserWindow({});
 
-    mainWindow.setIcon(path.join(__dirname, "assets", "stc.png"))
+    //mainWindow.setIcon(path.join(__dirname, "assets", "stc.png"))
 
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "html", "index.html"),
@@ -625,6 +640,41 @@ api.post(`/api/download`, async function(req, res) {
         slashes: true
     }))
 })
+
+setInterval(() => {
+    SyncConfigFromQuest()
+}, 2500)
+
+function SyncConfigFromQuest() {
+    fetch("http://" + config.ip + ":" + HttpPort + "/config").then((res) => {
+        res.json().then((json) => {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "oconfig": {
+                    "decimals": json.decimals,
+                    "dontenergy": json.dontenergy,
+                    "dontmpcode": json.dontmpcode,
+                    "alwaysmpcode": json.alwaysmpcode,
+                    "alwaysupdate": json.alwaysupdate
+                }
+            }));
+        })
+    })
+}
+function SyncConfigToQuest() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "http://" + config.ip + ":" + HttpPort + "/config", true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({
+        "decimals": config.oconfig.decimals,
+        "dontenergy": config.oconfig.dontenergy,
+        "dontmpcode": config.oconfig.dontmpcode,
+        "alwaysmpcode": config.oconfig.alwaysmpcode,
+        "alwaysupdate": config.oconfig.alwaysupdate
+    }));
+}
 
 // Really really chonky
 api.post(`/api/postconfig`, async function(req, res) {
@@ -709,6 +759,7 @@ api.post(`/api/postconfig`, async function(req, res) {
             config.oconfig.alwaysupdate = req.body.oconfig.alwaysupdate
             console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
         }
+        SyncConfigToQuest();
     }
 
     saveConfig()

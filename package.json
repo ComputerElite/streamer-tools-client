@@ -8,6 +8,10 @@
     "pack": "electron-builder",
     "dist": "electron-builder -w --publish never"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ComputerElite/streamer-tools-client.git"
+  },
   "author": "ComputerElite",
   "license": "GPL-3.0",
   "dependencies": {
@@ -19,7 +23,9 @@
     "net": "^1.0.2",
     "node-fetch": "^2.6.1",
     "shelljs": "^0.8.4",
-    "tmi.js": "^1.8.3"
+    "tmi.js": "^1.8.3",
+    "update-electron-app": "^2.0.1",
+    "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
     "electron": "^12.0.9",
@@ -27,6 +33,10 @@
     "electron-packager": "^15.2.0"
   },
   "build": {
+    "files": [
+      "**/*",
+      "!overlays"
+    ],
     "appId": "streamer-tools.client",
     "mac": {
       "category": "streamer-tools.client"
