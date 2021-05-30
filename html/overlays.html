@@ -53,19 +53,21 @@
     </body>
     <script>
         var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
-        fetch("http://localhost:53510/api/getconfig").then((res) => {
-            res.json().then((json) => {
-                if(json.ip != null && json.ip != "null") document.getElementById("ip").value = json.ip
-                document.getElementById("rate").value = json.interval
-                document.getElementById("decimals").value = json.oconfig.decimals
-                document.getElementById("custom").value = json.oconfig.customtext
-                document.getElementById("dontenergy").checked = json.oconfig.dontenergy
-                document.getElementById("dontmpcode").checked = json.oconfig.dontmpcode
-                document.getElementById("alwaysmpcode").checked = json.oconfig.alwaysmpcode
-                document.getElementById("alwaysupdate").checked = json.oconfig.alwaysupdate
-                UpdateAll();
-            });
-        })
+        setInterval(() => {
+            fetch("http://localhost:53510/api/getconfig").then((res) => {
+                res.json().then((json) => {
+                    if(json.ip != null && json.ip != "null") document.getElementById("ip").value = json.ip
+                    document.getElementById("rate").value = json.interval
+                    document.getElementById("decimals").value = json.oconfig.decimals
+                    document.getElementById("custom").value = json.oconfig.customtext
+                    document.getElementById("dontenergy").checked = json.oconfig.dontenergy
+                    document.getElementById("dontmpcode").checked = json.oconfig.dontmpcode
+                    document.getElementById("alwaysmpcode").checked = json.oconfig.alwaysmpcode
+                    document.getElementById("alwaysupdate").checked = json.oconfig.alwaysupdate
+                    UpdateAll();
+                });
+            })
+        }, 2500);
         function UpdateAll() {
             fetch("http://localhost:53510/api/overlays").then((res) => {
                 res.json().then((json) => {

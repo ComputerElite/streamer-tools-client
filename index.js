@@ -655,7 +655,6 @@ function SyncConfigFromQuest() {
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "oconfig": {
-                    "decimals": json.decimals,
                     "dontenergy": json.dontenergy,
                     "dontmpcode": json.dontmpcode,
                     "alwaysmpcode": json.alwaysmpcode,
@@ -664,18 +663,17 @@ function SyncConfigFromQuest() {
                 "log": false
             }));
         })
-    })
+    }).catch((err) => {})
 }
 function SyncConfigToQuest() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "http://" + config.ip + ":" + HttpPort + "/config", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify({
-        "decimals": config.oconfig.decimals,
-        "dontenergy": config.oconfig.dontenergy,
-        "dontmpcode": config.oconfig.dontmpcode,
-        "alwaysmpcode": config.oconfig.alwaysmpcode,
-        "alwaysupdate": config.oconfig.alwaysupdate
+        dontenergy: config.oconfig.dontenergy,
+        dontmpcode: config.oconfig.dontmpcode,
+        alwaysmpcode: config.oconfig.alwaysmpcode,
+        alwaysupdate: config.oconfig.alwaysupdate
     }));
 }
 
@@ -694,28 +692,28 @@ api.post(`/api/postconfig`, async function(req, res) {
     
         if(ipReg.test(req.body.ip)) {
             config.ip = req.body.ip
-            if(log) console.log("config.ip set to: " + config.ip)
+            console.log("config.ip set to: " + config.ip)
         } else {
-            if(log) console.log("config.ip (" + req.body.ip + ") not valid")
+            console.log("config.ip (" + req.body.ip + ") not valid")
         }
     }
     if(req.body.interval != undefined) {
         config.interval = req.body.interval
-        if(log) console.log("config.interval set to: " + config.interval)
+        console.log("config.interval set to: " + config.interval)
     }
     if(req.body.dcrpe != undefined) {
         config.dcrpe = req.body.dcrpe
-        if(log) console.log("config.dcrpe set to: " + config.dcrpe)
+        console.log("config.dcrpe set to: " + config.dcrpe)
     }
     if(req.body.srm != undefined) {
         if(config.srm == undefined) config.srm = {}
         if(req.body.srm.requestdelay != undefined) {
             config.srm.requestdelay = req.body.srm.requestdelay
-            if(log) console.log("config.srm.requestdelay set to: " + config.srm.requestdelay)
+            console.log("config.srm.requestdelay set to: " + config.srm.requestdelay)
         }
         if(req.body.srm.maxsonglength != undefined) {
             config.srm.maxsonglength = req.body.srm.maxsonglength
-            if(log) console.log("config.srm.maxsonglength set to: " + config.srm.maxsonglength)
+            console.log("config.srm.maxsonglength set to: " + config.srm.maxsonglength)
         }
     }
 
@@ -724,15 +722,15 @@ api.post(`/api/postconfig`, async function(req, res) {
         if(config.twitch == undefined) config.twitch = {}
         if(req.body.twitch.enabled != undefined) {
             config.twitch.enabled = req.body.twitch.enabled
-            if(log) console.log("config.twitch.enabled set to: " + config.twitch.enabled)
+            console.log("config.twitch.enabled set to: " + config.twitch.enabled)
         }
         if(req.body.twitch.token != undefined) {
             config.twitch.token = req.body.twitch.token
-            if(log) console.log("config.twitch.token set to: " + config.twitch.token)
+            console.log("config.twitch.token set to: " + config.twitch.token)
         }
         if(req.body.twitch.channelname != undefined) {
             config.twitch.channelname = req.body.twitch.channelname
-            if(log) console.log("config.twitch.channelname set to: " + config.twitch.channelname)
+            console.log("config.twitch.channelname set to: " + config.twitch.channelname)
         }
     }
 
@@ -741,33 +739,33 @@ api.post(`/api/postconfig`, async function(req, res) {
         if(config.oconfig == undefined) config.oconfig = {}
         if(req.body.oconfig.customtext != undefined) {
             config.oconfig.customtext = req.body.oconfig.customtext
-            if(log) console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
+            console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
         }
         if(req.body.oconfig.decimals != undefined) {
             config.oconfig.decimals = req.body.oconfig.decimals
-            if(log) console.log("config.oconfig.decimals set to: " + config.oconfig.decimals)
+            console.log("config.oconfig.decimals set to: " + config.oconfig.decimals)
         }
         if(req.body.oconfig.dontenergy != undefined) {
             config.oconfig.dontenergy = req.body.oconfig.dontenergy
-            if(log) console.log("config.oconfig.dontenergy set to: " + config.oconfig.dontenergy)
+            console.log("config.oconfig.dontenergy set to: " + config.oconfig.dontenergy)
         }
         if(req.body.oconfig.dontmpcode != undefined) {
             config.oconfig.dontmpcode = req.body.oconfig.dontmpcode
-            if(log) console.log("config.oconfig.dontmpcode set to: " + config.oconfig.dontmpcode)
+            console.log("config.oconfig.dontmpcode set to: " + config.oconfig.dontmpcode)
         }
         if(req.body.oconfig.alwaysmpcode != undefined) {
             config.oconfig.alwaysmpcode = req.body.oconfig.alwaysmpcode
-            if(log) console.log("config.oconfig.alwaysmpcode set to: " + config.oconfig.alwaysmpcode)
+            console.log("config.oconfig.alwaysmpcode set to: " + config.oconfig.alwaysmpcode)
         }
         if(req.body.oconfig.alwaysupdate != undefined) {
             config.oconfig.alwaysupdate = req.body.oconfig.alwaysupdate
-            if(log) console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
+            console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
         }
         SyncConfigToQuest();
     }
 
     saveConfig()
-})
+}).catch
 
 api.post(`/api/copytoclipboard`, async function(req, res) {
     clipboard.writeText(req.body.text)
@@ -785,7 +783,9 @@ api.post(`/api/removerequest`, async function(req, res) {
 })
 
 api.get(`/api/getconfig`, async function(req, res) {
-    res.json(config)
+    try {
+        res.json(config)
+    } catch {}
 })
 
 function constuctParameters() {
@@ -810,11 +810,15 @@ api.get(`/api/getOverlay`, async function(req, res) {
         }
         if(success) return
     })
-    if(!success) res.json({"msg": "error"})
+    try {
+        if(!success) res.json({"msg": "error"})
+    } catch {}
 })
 
 api.get(`/api/requests`, async function(req, res) {
-    res.json(srm)
+    try {
+        res.json(srm)
+    } catch {}
 })
 
 api.get(`/windows/home`, async function(req, res) {
@@ -850,7 +854,9 @@ api.get(`/windows/srm`, async function(req, res) {
 })
 
 api.get(`/api/overlays`, async function(req, res) {
-    res.json(config.overlays)
+    try {
+        res.json(config.overlays)
+    } catch {}
 })
 
 api.get(`/api/raw`, async function(req, res) {
@@ -860,13 +866,18 @@ api.get(`/api/raw`, async function(req, res) {
         config.ip = ip;
     }
     res.header("Access-Control-Allow-Origin", "*")
-    res.json(raw)
+    try {
+        res.json(raw)
+    } catch {}
 })
 
 api.get(`/api/rawcover`, async function(req, res) {
     res.header("Access-Control-Allow-Origin", "*")
     //if(coverBase64 == "") res.statusCode = 404
-    res.send(coverBase64)
+    try {
+        res.send(coverBase64)
+    } catch {}
+    
 })
 
 api.use("/overlays", express.static(path.join(applicationDir, "overlays")))
