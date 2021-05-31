@@ -478,7 +478,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
                     })
                 } else {
                     dcrp.updatePresence({
-                        state: "Quest might not be conntected",
+                        state: "Quest might not be connected",
                         details: "No info available",
                         smallImageText: smallText,
                         smallImageKey: 'stc',
