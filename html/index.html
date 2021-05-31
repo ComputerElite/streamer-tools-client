@@ -63,7 +63,7 @@
 
         function SetDcrp() {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
+            xhr.open("PATCH", "http://localhost:53510/api/patchconfig", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "dcrpe": document.getElementById("dcrp").checked
@@ -72,7 +72,7 @@
 
         function SetBot() {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
+            xhr.open("PATCH", "http://localhost:53510/api/patchconfig", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "twitch": {
@@ -89,7 +89,7 @@
                 return
             }
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
+            xhr.open("PATCH", "http://localhost:53510/api/patchconfig", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "ip": document.getElementById("ip").value

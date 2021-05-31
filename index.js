@@ -13,7 +13,6 @@ const  { networkInterfaces }  = require('os')
 const { dialog, autoUpdater } = electron
 const { app } = electron
 const  {BrowserWindow } = electron
-const  {remote } = electron
 const net = require('net');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
@@ -532,6 +531,7 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
     });
 
     client.connect();
+    
 
     var lastRequest = new Date();
 
@@ -631,6 +631,7 @@ api.use(bodyParser.json());
 api.use(bodyParser.raw());
 
 api.post(`/api/download`, async function(req, res) {
+    res.end()
     config.overlays.forEach(overlay => {
         if(overlay.Name == req.body.Name) {
             downloadOverlay(overlay);
@@ -680,7 +681,8 @@ function SyncConfigToQuest() {
 }
 
 // Really really chonky
-api.post(`/api/postconfig`, async function(req, res) {
+api.patch(`/api/patchconfig`, async function(req, res) {
+    res.end()
     if(config.twitch == undefined) {
         config.twitch = {}
     }
@@ -770,11 +772,13 @@ api.post(`/api/postconfig`, async function(req, res) {
 }).catch
 
 api.post(`/api/copytoclipboard`, async function(req, res) {
+    res.end()
     clipboard.writeText(req.body.text)
     console.log("wrote " + req.body.text + " to clipboard")
 })
 
 api.post(`/api/removerequest`, async function(req, res) {
+    res.end()
     for(let i = 0; i < srm.length; i++) {
         if(req.body.key == srm[i].key) {
             srm.splice(i, 1)
