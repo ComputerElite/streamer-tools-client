@@ -4,11 +4,10 @@ A Client for the Streamer tools Beat Saber mod
 # Installation
 ## Downloading the client
 ### Windows
-1. Get the latest binaries from [Actions](https://github.com/ComputerElite/streamer-tools-client/actions) (Simply click the latest entry and then download the zip file at the bottom)
+1. Get the latest binaries from [Actions](https://github.com/ComputerElite/streamer-tools-client/actions) (Simply click the latest entry and then download the zip file at the bottom). You have to have a GitHub account
 2. Extract the zip file
 3. Run the exe and you should be set up
-4. 
-### Mac and Linux
+### Mac, Windows and Linux
 1. Download the quest mod from [The streamer tools repo](https://github.com/EnderdracheLP/streamer-tools/releases/latest) and upload it to BMBF.
 2. [Install Node.js](https://nodejs.org/en/download/)
 3. Download all files from this repo, unzip them and run install.bat
