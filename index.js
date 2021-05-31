@@ -206,6 +206,11 @@ function fetchData() {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
                         sent = true;
                         if(lastid != raw.id || got404) {
+                            for(let i = 0; i < srm.length; i++) {
+                                if(srm[i].hash == raw.id.replace("custom_song_", "")) {
+                                    srm.splice(i, 1)
+                                }
+                            }
                             lastid = raw.id
                             fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
                                 res2.text().then((text) => {
