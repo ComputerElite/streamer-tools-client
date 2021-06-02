@@ -263,6 +263,7 @@ function fetchData() {
 
 setInterval(() => {
     fetchData()
+    raw.connected = connected
 }, config.interval);
 
 
@@ -405,7 +406,8 @@ if(config.dcrpe != undefined && config.dcrpe) {
         var songEnd = new Date();
         songEnd.setSeconds(songEnd.getSeconds() - raw.time + raw.endTime)
         var smallText = "Presence by streamer tools,\nclient by ComputerElite"
-        switch(raw.location) {
+        var location = connected ? raw.location : "-1"
+        switch(location) {
             case 1:
                 // Solo song
                 dcrp.updatePresence({
