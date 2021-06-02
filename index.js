@@ -187,6 +187,7 @@ function fetchData() {
         fetching = false;
         res.json().then((json) => {
             raw = json
+            raw.connected = connected
 
             console.log("connecting with Quest")
             var socket = net.Socket();
@@ -204,6 +205,7 @@ function fetchData() {
                 socket.on('data', async function(data){
                     try {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
+                        raw.connected = connected
                         sent = true;
                         if(lastid != raw.id || got404) {
                             for(let i = 0; i < srm.length; i++) {
@@ -263,7 +265,6 @@ function fetchData() {
 
 setInterval(() => {
     fetchData()
-    raw.connected = connected
 }, config.interval);
 
 
@@ -484,6 +485,8 @@ if(config.dcrpe != undefined && config.dcrpe) {
                         instance: true
                     })
                 } else {
+                    dcrp.disconnect();
+                    /*
                     dcrp.updatePresence({
                         state: "Quest might not be connected",
                         details: "No info available",
@@ -492,6 +495,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
                         largeImageKey: 'bs',
                         instance: true
                     })
+                    */
                 }
                 
                 break;
@@ -814,7 +818,6 @@ api.get(`/api/getOverlay`, async function(req, res) {
             overlay.downloads.forEach(download => {
                 if(download.IsEntryPoint) {
                     var red = "http://localhost:" + ApiPort + "/overlays/" + overlay.Name + "/" + download.Path + constuctParameters()
-                    console.log("redirecting to: " + red)
                     res.redirect(red)
                     success = true
                     return;
