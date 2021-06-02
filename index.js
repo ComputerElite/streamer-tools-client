@@ -407,8 +407,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
         var songEnd = new Date();
         songEnd.setSeconds(songEnd.getSeconds() - raw.time + raw.endTime)
         var smallText = "Presence by streamer tools,\nclient by ComputerElite"
-        var location = connected ? raw.location : "-1"
-        switch(location) {
+        switch(raw.location) {
             case 1:
                 // Solo song
                 dcrp.updatePresence({
@@ -485,8 +484,6 @@ if(config.dcrpe != undefined && config.dcrpe) {
                         instance: true
                     })
                 } else {
-                    dcrp.disconnect();
-                    /*
                     dcrp.updatePresence({
                         state: "Quest might not be connected",
                         details: "No info available",
@@ -495,7 +492,6 @@ if(config.dcrpe != undefined && config.dcrpe) {
                         largeImageKey: 'bs',
                         instance: true
                     })
-                    */
                 }
                 
                 break;
