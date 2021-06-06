@@ -180,6 +180,24 @@ var lastid = "";
 var coverBase64 = "";
 var got404 = false;
 
+var fetchedKey = false
+var key = false
+
+ async function GetBeatSaverKey(got404) {
+    if(!got404) {
+        fetchedKey = false
+        fetch("https://beatsaver.com/api/maps/by-hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0' }}).then((result) => {
+            result.text().then(t => console.log(t))
+            result.json().then((json) => {
+                try {
+                    key = json["key"]
+                    fetchedKey = true
+                } catch {}
+            })
+        }).catch((err) => {})
+    }
+}
+
 function fetchData() {
     if(connected || fetching) return;
     fetching = true;
@@ -205,7 +223,10 @@ function fetchData() {
                 socket.on('data', async function(data){
                     try {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
+                        
                         raw.connected = connected
+                        raw.fetchedKey = fetchedKey
+                        raw.key = key
                         sent = true;
                         if(lastid != raw.id || got404) {
                             for(let i = 0; i < srm.length; i++) {
@@ -213,6 +234,7 @@ function fetchData() {
                                     srm.splice(i, 1)
                                 }
                             }
+                            GetBeatSaverKey(got404);
                             lastid = raw.id
                             fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
                                 res2.text().then((text) => {
