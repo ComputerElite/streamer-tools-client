@@ -186,8 +186,7 @@ var key = false
  async function GetBeatSaverKey(got404) {
     if(!got404) {
         fetchedKey = false
-        fetch("https://beatsaver.com/api/maps/by-hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0' }}).then((result) => {
-            result.text().then(t => console.log(t))
+        fetch("https://beatsaver.com/api/maps/by-hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 try {
                     key = json["key"]
@@ -354,7 +353,7 @@ function downloadFile(url, dest) {
             path: parsed.pathname,
             method: 'GET',
             headers: {
-                'User-Agent': `streamer-tools-client/${version}`
+                'User-Agent': `streamer-tools-client/${version} (+https://github.com/ComputerElite/streamer-tools-client/)`
             }
           }
         const request = https.get(options, response => {
@@ -526,7 +525,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
 function BSaverRequest(key) {
     return new Promise((resolve, reject) => {
         console.log("requesting")
-        fetch("https://beatsaver.com/api/maps/detail/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0' }}).then((result) => {
+        fetch("https://beatsaver.com/api/maps/detail/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 resolve(json)
             }).catch((err) => {
