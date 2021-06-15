@@ -680,7 +680,7 @@ function SyncConfigFromQuest() {
     fetch("http://" + config.ip + ":" + HttpPort + "/config").then((res) => {
         res.json().then((json) => {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:53510/api/postconfig", true);
+            xhr.open("PATCH", "http://localhost:53510/api/patchconfig", true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 "oconfig": {
@@ -697,7 +697,7 @@ function SyncConfigFromQuest() {
 }
 function SyncConfigToQuest() {
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://" + config.ip + ":" + HttpPort + "/config", true);
+    xhr.open("PUT", "http://" + config.ip + ":" + HttpPort + "/config", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify({
         "decimals": config.oconfig.decimals,
@@ -717,35 +717,33 @@ api.patch(`/api/patchconfig`, async function(req, res) {
     if(config.oconfig == undefined) {
         config.oconfig = {}
     }
-    var log = true;
-    if(req.body.log != undefined) log = req.body.log
+    var log = req.body.log;
     if(req.body.ip != undefined) {
         var ipReg = /^((2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])\.){3}(2(5[0-5]|[0-4][0-9])|1?[0-9]?[0-9])$/g
     
-        if(ipReg.test(req.body.ip)) {
-            config.ip = req.body.ip
-            console.log("config.ip set to: " + config.ip)
-        } else {
-            console.log("config.ip (" + req.body.ip + ") not valid")
+        if(!ipReg.test(req.body.ip)) {
+            if(log) console.log("warning: config.ip (" + req.body.ip + ") is no ipv4 ip.")
         }
+        config.ip = req.body.ip
+        if(log) console.log("config.ip set to: " + config.ip)
     }
     if(req.body.interval != undefined) {
         config.interval = req.body.interval
-        console.log("config.interval set to: " + config.interval)
+        if(log) console.log("config.interval set to: " + config.interval)
     }
     if(req.body.dcrpe != undefined) {
         config.dcrpe = req.body.dcrpe
-        console.log("config.dcrpe set to: " + config.dcrpe)
+        if(log) console.log("config.dcrpe set to: " + config.dcrpe)
     }
     if(req.body.srm != undefined) {
         if(config.srm == undefined) config.srm = {}
         if(req.body.srm.requestdelay != undefined) {
             config.srm.requestdelay = req.body.srm.requestdelay
-            console.log("config.srm.requestdelay set to: " + config.srm.requestdelay)
+            if(log) console.log("config.srm.requestdelay set to: " + config.srm.requestdelay)
         }
         if(req.body.srm.maxsonglength != undefined) {
             config.srm.maxsonglength = req.body.srm.maxsonglength
-            console.log("config.srm.maxsonglength set to: " + config.srm.maxsonglength)
+            if(log) console.log("config.srm.maxsonglength set to: " + config.srm.maxsonglength)
         }
     }
 
@@ -771,27 +769,27 @@ api.patch(`/api/patchconfig`, async function(req, res) {
         if(config.oconfig == undefined) config.oconfig = {}
         if(req.body.oconfig.customtext != undefined) {
             config.oconfig.customtext = req.body.oconfig.customtext
-            console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
+            if(log) console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
         }
         if(req.body.oconfig.decimals != undefined) {
             config.oconfig.decimals = parseInt(req.body.oconfig.decimals)
-            console.log("config.oconfig.decimals set to: " + config.oconfig.decimals)
+            if(log) console.log("config.oconfig.decimals set to: " + config.oconfig.decimals)
         }
         if(req.body.oconfig.dontenergy != undefined) {
             config.oconfig.dontenergy = req.body.oconfig.dontenergy
-            console.log("config.oconfig.dontenergy set to: " + config.oconfig.dontenergy)
+            if(log) console.log("config.oconfig.dontenergy set to: " + config.oconfig.dontenergy)
         }
         if(req.body.oconfig.dontmpcode != undefined) {
             config.oconfig.dontmpcode = req.body.oconfig.dontmpcode
-            console.log("config.oconfig.dontmpcode set to: " + config.oconfig.dontmpcode)
+            if(log) console.log("config.oconfig.dontmpcode set to: " + config.oconfig.dontmpcode)
         }
         if(req.body.oconfig.alwaysmpcode != undefined) {
             config.oconfig.alwaysmpcode = req.body.oconfig.alwaysmpcode
-            console.log("config.oconfig.alwaysmpcode set to: " + config.oconfig.alwaysmpcode)
+            if(log) console.log("config.oconfig.alwaysmpcode set to: " + config.oconfig.alwaysmpcode)
         }
         if(req.body.oconfig.alwaysupdate != undefined) {
             config.oconfig.alwaysupdate = req.body.oconfig.alwaysupdate
-            console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
+            if(log) console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
         }
         SyncConfigToQuest();
     }
