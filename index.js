@@ -200,7 +200,7 @@ var key = false
 function fetchData() {
     if(connected || fetching) return;
     fetching = true;
-    fetch("http://" + config.ip + ":" + HttpPort).then((res) => {
+    fetch("http://" + config.ip + ":" + HttpPort + "/data").then((res) => {
         fetching = false;
         res.json().then((json) => {
             raw = json
@@ -227,6 +227,9 @@ function fetchData() {
                         raw.fetchedKey = fetchedKey
                         raw.key = key
                         sent = true;
+                        if(!raw.configFetched) {
+                            UpdateOverlayConfig();
+                        }
                         if(lastid != raw.id || got404) {
                             for(let i = 0; i < srm.length; i++) {
                                 if(srm[i].hash == raw.id.replace("custom_song_", "")) {
@@ -672,28 +675,33 @@ api.post(`/api/download`, async function(req, res) {
     }))
 })
 
-setInterval(() => {
-    SyncConfigFromQuest()
-}, 2500)
-
-function SyncConfigFromQuest() {
+function UpdateOverlayConfig() {
     fetch("http://" + config.ip + ":" + HttpPort + "/config").then((res) => {
         res.json().then((json) => {
-            var xhr = new XMLHttpRequest();
-            xhr.open("PATCH", "http://localhost:53510/api/patchconfig", true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify({
-                "oconfig": {
-                    "decimals": json.decimals,
-                    "dontenergy": json.dontenergy,
-                    "dontmpcode": json.dontmpcode,
-                    "alwaysmpcode": json.alwaysmpcode,
-                    "alwaysupdate": json.alwaysupdate
-                },
-                "log": false
-            }));
+            if(config.oconfig.lastChanged > json.lastChanged) {
+                SyncConfigToQuest();
+            } else {
+                SyncConfigFromQuest();
+            }
+            
         })
     }).catch((err) => {})
+}
+
+function SyncConfigFromQuest() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("PATCH", "http://localhost:53510/api/patchconfig", true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({
+        "oconfig": {
+            "decimals": json.decimals,
+            "dontenergy": json.dontenergy,
+            "dontmpcode": json.dontmpcode,
+            "alwaysmpcode": json.alwaysmpcode,
+            "alwaysupdate": json.alwaysupdate
+        },
+        "log": false
+    }));
 }
 function SyncConfigToQuest() {
     var xhr = new XMLHttpRequest();
@@ -704,7 +712,8 @@ function SyncConfigToQuest() {
         "dontenergy": config.oconfig.dontenergy,
         "dontmpcode": config.oconfig.dontmpcode,
         "alwaysmpcode": config.oconfig.alwaysmpcode,
-        "alwaysupdate": config.oconfig.alwaysupdate
+        "alwaysupdate": config.oconfig.alwaysupdate,
+        "lastChanged": config.oconfig.lastChanged
     }));
 }
 
@@ -767,6 +776,7 @@ api.patch(`/api/patchconfig`, async function(req, res) {
     // overlay config
     if(req.body.oconfig) {
         if(config.oconfig == undefined) config.oconfig = {}
+        config.oconfig.lastChanged = Math.round((new Date()).getTime() / 1000)
         if(req.body.oconfig.customtext != undefined) {
             config.oconfig.customtext = req.body.oconfig.customtext
             if(log) console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
