@@ -801,7 +801,7 @@ api.patch(`/api/patchconfig`, async function(req, res) {
             config.oconfig.alwaysupdate = req.body.oconfig.alwaysupdate
             if(log) console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
         }
-        SyncConfigToQuest();
+        UpdateOverlayConfig();
     }
 
     saveConfig()
