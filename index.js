@@ -681,14 +681,14 @@ function UpdateOverlayConfig() {
             if(config.oconfig.lastChanged > json.lastChanged) {
                 SyncConfigToQuest();
             } else {
-                SyncConfigFromQuest();
+                SyncConfigFromQuest(json);
             }
             
         })
     }).catch((err) => {})
 }
 
-function SyncConfigFromQuest() {
+function SyncConfigFromQuest(json) {
     var xhr = new XMLHttpRequest();
     xhr.open("PATCH", "http://localhost:53510/api/patchconfig", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -705,7 +705,7 @@ function SyncConfigFromQuest() {
 }
 function SyncConfigToQuest() {
     var xhr = new XMLHttpRequest();
-    xhr.open("PUT", "http://" + config.ip + ":" + HttpPort + "/config", true);
+    xhr.open("PATCH", "http://" + config.ip + ":" + HttpPort + "/config", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify({
         "decimals": config.oconfig.decimals,
