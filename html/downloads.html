@@ -57,7 +57,7 @@
                     link = download.URL
                 }
             })
-            return `<div style="margin-bottom: 30px;">${overlay.Name}:<br/><input style="margin-bottom: 10px;" onclick='Download("${overlay.Name}")' type='button' value="${overlay.downloaded ? "download again" : "download"}"><br/><iframe width=90% height="500px" src="${link}"></iframe></div>`
+            return `<div style="margin-bottom: 30px;">${overlay.Name}:<br/><input style="margin-bottom: 10px;" onclick='Download("${overlay.Name}")' type='button' value="${overlay.downloaded ? (overlay.localVersionCode == overlay.versionCode ? "download again" : "Update") : "download"}"><br/><iframe width=90% height="500px" src="${link}"></iframe></div>`
         }
 
         function Download(name) {

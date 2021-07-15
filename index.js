@@ -217,6 +217,7 @@ function fetchData() {
                 socket.on('close', function() {
                     console.log('Lost connection with Quest');
                     connected = false;
+                    raw.connected = connected
                 });
     
                 socket.on('data', async function(data){
@@ -228,7 +229,7 @@ function fetchData() {
                         raw.key = key
                         sent = true;
                         if(!raw.configFetched) {
-                            UpdateOverlayConfig();
+                            UpdateOverlayConfig(true);
                         }
                         if(lastid != raw.id || got404) {
                             for(let i = 0; i < srm.length; i++) {
@@ -308,22 +309,31 @@ function CheckOverlaysDownloaded() {
             config.overlays[i].downloaded = false;
         }
     }
+    saveConfig();
 }
 
 function UpdateOverlays() {
     return new Promise((resolve, reject) => {
         fetch("https://computerelite.github.io/tools/Streamer_Tools_Quest_Overlay/overlays.json").then((res) => {
             res.json().then((json) => {
-                var configBackup = config;
+                console.log(JSON.stringify(config, null, 4))
+                var configBackup = JSON.parse(JSON.stringify(config));
                 config.overlays = json.overlays;
                 configBackup.overlays.forEach(overlay => {
                     var exists = false;
+                    let i = 0;
                     config.overlays.forEach(item => {
+                        //name is kinda an id
                         if(item.Name == overlay.Name)
                         {
                             exists = true;
+                            //console.log(JSON.stringify(overlay))
+                            config.overlays[i].localVersionCode = overlay.localVersionCode
+                            //console.log(JSON.stringify(config.overlays[i]))
+                            //console.log(config.overlays[i].localVersionCode)
                             return;
                         }
+                        i++;
                     })
                     if(!exists) config.overlays.push(overlay)
                 })
@@ -498,7 +508,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
                 })
                 break;
             default:
-                if(raw.location == 0) {
+                if(raw.connected) {
                     dcrp.updatePresence({
                         state: "Selecting songs",
                         details: "In menu",
@@ -517,7 +527,6 @@ if(config.dcrpe != undefined && config.dcrpe) {
                         instance: true
                     })
                 }
-                
                 break;
         }
     }
@@ -641,6 +650,17 @@ function downloadOverlay(overlay) {
         }
         downloadFile(download.URL, path.join(dir, download.Path))
     });
+    
+    for(let i = 0; i < config.overlays.length; i++) {
+        //console.log(config.overlays[i].Name + "==" + overlay.Name)
+        if(config.overlays[i].Name == overlay.Name) {
+            //console.log("true")
+            config.overlays[i].localVersionCode = overlay.versionCode
+            saveConfig()
+            break;
+        }
+    }
+    console.log("Download of " + overlay.Name + " has finished")
     CheckOverlaysDownloaded();
 }
 
@@ -675,15 +695,14 @@ api.post(`/api/download`, async function(req, res) {
     }))
 })
 
-function UpdateOverlayConfig() {
+function UpdateOverlayConfig(dontUpdate = false) {
     fetch("http://" + config.ip + ":" + HttpPort + "/config").then((res) => {
         res.json().then((json) => {
             if(config.oconfig.lastChanged > json.lastChanged) {
-                SyncConfigToQuest();
+                if(!dontUpdate) SyncConfigToQuest();
             } else {
                 SyncConfigFromQuest(json);
             }
-            
         })
     }).catch((err) => {})
 }
@@ -700,7 +719,8 @@ function SyncConfigFromQuest(json) {
             "alwaysmpcode": json.alwaysmpcode,
             "alwaysupdate": json.alwaysupdate
         },
-        "log": false
+        "log": false,
+        "updateQuestConfig": false
     }));
 }
 function SyncConfigToQuest() {
@@ -776,32 +796,34 @@ api.patch(`/api/patchconfig`, async function(req, res) {
     // overlay config
     if(req.body.oconfig) {
         if(config.oconfig == undefined) config.oconfig = {}
-        config.oconfig.lastChanged = Math.round((new Date()).getTime() / 1000)
-        if(req.body.oconfig.customtext != undefined) {
-            config.oconfig.customtext = req.body.oconfig.customtext
-            if(log) console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
+        if(config.oconfig.customtext != req.body.oconfig.customtext || config.oconfig.decimals != req.body.oconfig.decimals || config.oconfig.dontenergy != req.body.oconfig.dontenergy || config.oconfig.dontmpcode != req.body.oconfig.dontmpcode || config.oconfig.alwaysmpcode != req.body.oconfig.alwaysmpcode || config.oconfig.alwaysupdate != req.body.oconfig.alwaysupdate) {
+            config.oconfig.lastChanged = Math.round((new Date()).getTime() / 1000)
+            if(req.body.oconfig.customtext != undefined) {
+                config.oconfig.customtext = req.body.oconfig.customtext
+                if(log) console.log("config.oconfig.customtext set to: " + config.oconfig.customtext)
+            }
+            if(req.body.oconfig.decimals != undefined) {
+                config.oconfig.decimals = parseInt(req.body.oconfig.decimals)
+                if(log) console.log("config.oconfig.decimals set to: " + config.oconfig.decimals)
+            }
+            if(req.body.oconfig.dontenergy != undefined) {
+                config.oconfig.dontenergy = req.body.oconfig.dontenergy
+                if(log) console.log("config.oconfig.dontenergy set to: " + config.oconfig.dontenergy)
+            }
+            if(req.body.oconfig.dontmpcode != undefined) {
+                config.oconfig.dontmpcode = req.body.oconfig.dontmpcode
+                if(log) console.log("config.oconfig.dontmpcode set to: " + config.oconfig.dontmpcode)
+            }
+            if(req.body.oconfig.alwaysmpcode != undefined) {
+                config.oconfig.alwaysmpcode = req.body.oconfig.alwaysmpcode
+                if(log) console.log("config.oconfig.alwaysmpcode set to: " + config.oconfig.alwaysmpcode)
+            }
+            if(req.body.oconfig.alwaysupdate != undefined) {
+                config.oconfig.alwaysupdate = req.body.oconfig.alwaysupdate
+                if(log) console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
+            }
+            UpdateOverlayConfig(req.body.updateQuestConfig);
         }
-        if(req.body.oconfig.decimals != undefined) {
-            config.oconfig.decimals = parseInt(req.body.oconfig.decimals)
-            if(log) console.log("config.oconfig.decimals set to: " + config.oconfig.decimals)
-        }
-        if(req.body.oconfig.dontenergy != undefined) {
-            config.oconfig.dontenergy = req.body.oconfig.dontenergy
-            if(log) console.log("config.oconfig.dontenergy set to: " + config.oconfig.dontenergy)
-        }
-        if(req.body.oconfig.dontmpcode != undefined) {
-            config.oconfig.dontmpcode = req.body.oconfig.dontmpcode
-            if(log) console.log("config.oconfig.dontmpcode set to: " + config.oconfig.dontmpcode)
-        }
-        if(req.body.oconfig.alwaysmpcode != undefined) {
-            config.oconfig.alwaysmpcode = req.body.oconfig.alwaysmpcode
-            if(log) console.log("config.oconfig.alwaysmpcode set to: " + config.oconfig.alwaysmpcode)
-        }
-        if(req.body.oconfig.alwaysupdate != undefined) {
-            config.oconfig.alwaysupdate = req.body.oconfig.alwaysupdate
-            if(log) console.log("config.oconfig.alwaysupdate set to: " + config.oconfig.alwaysupdate)
-        }
-        UpdateOverlayConfig();
     }
 
     saveConfig()
