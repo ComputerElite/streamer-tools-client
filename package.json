@@ -41,7 +41,7 @@
     "mac": {
       "category": "streamer-tools.client"
     },
-    "productName": "streamer-tools Client",
+    "productName": "streamer-tools-client",
     "target": "NSIS",
     "directories": {
       "output": "build"

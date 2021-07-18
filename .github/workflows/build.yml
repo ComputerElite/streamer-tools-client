@@ -18,9 +18,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14
-          
-      - name: list dir
-        run: dir
         
       - name: Get version
         id: getversion
@@ -49,4 +46,11 @@ jobs:
         with:
           name: streamer-tools-client_win.zip
           path: ./build/streamer-tools-client.zip
+          if-no-files-found: error
+
+      - name: Upload windows installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: streamer-tools-client_win_installer.exe
+          path: ./build/streamer-tools-client Setup ${{ steps.getversion.outputs.v }}.exe
           if-no-files-found: error
