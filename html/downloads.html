@@ -25,6 +25,7 @@
                 <div style="text-align: center; font-size: 24px; margin-bottom: 10px;">
                     Streamer Tools Client - Overlay downloads
                 </div>
+                <input style="margin-bottom: 10px; margin-left: 20px;" onclick='UpdateAllOverlays()' type='button' value="Update all Overlays">
                 <div style="text-align: center; font-size: 18px;">
                     <div style="margin-top: 20px;">
                         <div style="font-size: 22px;">Available Overlays:</div>
@@ -48,6 +49,13 @@
                     if(document.getElementById("overlays").innerHTML == "") document.getElementById("overlays").innerHTML = "Please download overlays"
                 });
             })
+        }
+
+        function UpdateAllOverlays() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:53510/api/updateoverlays", true);
+            xhr.setRequestHeader('Content-Type', 'text/plain');
+            xhr.send("");
         }
 
         function FormatToHTML(overlay) {

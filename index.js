@@ -76,7 +76,8 @@ if(fs.existsSync(path.join(applicationDir, "config.json"))) {
         },
         "srm": {
             "requestdelay": 10000
-        }
+        },
+        "autoupdateoverlays": true
     }
 }
 
@@ -233,7 +234,7 @@ function fetchData() {
                         }
                         if(lastid != raw.id || got404) {
                             for(let i = 0; i < srm.length; i++) {
-                                if(srm[i].hash == raw.id.replace("custom_song_", "")) {
+                                if(srm[i].hash.toLowerCase() == raw.id.replace("custom_song_", "").toLowerCase()) {
                                     srm.splice(i, 1)
                                 }
                             }
@@ -298,7 +299,23 @@ UpdateOverlays().then(() => {
     if(config.overlays.length != undefined) {
         CheckOverlaysDownloaded();
     }
+    UpdateAllOverlays()
 });
+
+function UpdateAllOverlays(updateWithoutCheck = false) {
+    if(!config.autoupdateoverlays && !updateWithoutCheck) return
+    console.log("Updating all overlays")
+    config.overlays.forEach(o => {
+        if(o.localVersionCode < o.versionCode) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:53510/api/download", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "Name": o.Name
+            }));
+        }
+    })
+}
 
 function CheckOverlaysDownloaded() {
     for(let i = 0; i < config.overlays.length; i++) {
@@ -316,7 +333,7 @@ function UpdateOverlays() {
     return new Promise((resolve, reject) => {
         fetch("https://computerelite.github.io/tools/Streamer_Tools_Quest_Overlay/overlays.json").then((res) => {
             res.json().then((json) => {
-                console.log(JSON.stringify(config, null, 4))
+                //console.log(JSON.stringify(config, null, 4))
                 var configBackup = JSON.parse(JSON.stringify(config));
                 config.overlays = json.overlays;
                 configBackup.overlays.forEach(overlay => {
@@ -504,7 +521,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
                     smallImageText: smallText,
                     smallImageKey: 'stc',
                     largeImageKey: 'bs',
-                    instance: true
+                    instance: false
                 })
                 break;
             default:
@@ -515,16 +532,16 @@ if(config.dcrpe != undefined && config.dcrpe) {
                         smallImageText: smallText,
                         smallImageKey: 'stc',
                         largeImageKey: 'bs',
-                        instance: true
+                        instance: false
                     })
                 } else {
                     dcrp.updatePresence({
-                        state: "Quest might not be connected",
+                        state: "Quest is not connected",
                         details: "No info available",
                         smallImageText: smallText,
                         smallImageKey: 'stc',
                         largeImageKey: 'bs',
-                        instance: true
+                        instance: false
                     })
                 }
                 break;
@@ -536,7 +553,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
 /////////////////// Twitch bot////////////////////////
 function BSaverRequest(key) {
     return new Promise((resolve, reject) => {
-        console.log("requesting")
+        console.log("requesting beatsaver key " + key)
         fetch("https://beatsaver.com/api/maps/detail/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 resolve(json)
@@ -723,6 +740,7 @@ function SyncConfigFromQuest(json) {
         "updateQuestConfig": false
     }));
 }
+
 function SyncConfigToQuest() {
     var xhr = new XMLHttpRequest();
     xhr.open("PATCH", "http://" + config.ip + ":" + HttpPort + "/config", true);
@@ -759,6 +777,10 @@ api.patch(`/api/patchconfig`, async function(req, res) {
     if(req.body.interval != undefined) {
         config.interval = req.body.interval
         if(log) console.log("config.interval set to: " + config.interval)
+    }
+    if(req.body.autoupdateoverlays != undefined) {
+        config.autoupdateoverlays = req.body.autoupdateoverlays
+        if(log) console.log("config.autoupdateoverlays set to: " + config.autoupdateoverlays)
     }
     if(req.body.dcrpe != undefined) {
         config.dcrpe = req.body.dcrpe
@@ -844,6 +866,15 @@ api.post(`/api/removerequest`, async function(req, res) {
             return;
         }
     }
+})
+
+api.post(`/api/updateoverlays`, async function(req, res) {
+    console.log("Hello")
+    UpdateAllOverlays(true)
+    try {
+        res.send("")
+    } catch {}
+    
 })
 
 api.get(`/api/getconfig`, async function(req, res) {
