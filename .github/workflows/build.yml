@@ -41,7 +41,7 @@ jobs:
           files: ./build/win-unpacked
           dest: ./build/streamer-tools-client.zip
         
-      - name: Upload windows binary
+      - name: Upload windows portable
         uses: actions/upload-artifact@v2
         with:
           name: streamer-tools-client_win.zip
