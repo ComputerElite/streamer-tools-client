@@ -193,7 +193,7 @@ var key = false
                     key = json["key"]
                     fetchedKey = true
                 } catch {}
-            })
+            }).catch((err) => {})
         }).catch((err) => {})
     }
 }
