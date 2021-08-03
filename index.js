@@ -53,7 +53,12 @@ let mainWindow;
 let config;
 
 if(fs.existsSync(path.join(applicationDir, "config.json"))) {
-    config = JSON.parse(fs.readFileSync(path.join(applicationDir, "config.json")))
+    try {
+        config = JSON.parse(fs.readFileSync(path.join(applicationDir, "config.json")))
+    } catch {
+        config = JSON.parse(fs.readFileSync(path.join(applicationDir, "config.json")).slice(0, -5))
+        saveConfig()
+    }
 } else {
     config = {
         "ip": "ip",
