@@ -192,10 +192,10 @@ var key = false
  async function GetBeatSaverKey(got404) {
     if(!got404) {
         fetchedKey = false
-        fetch("https://beatsaver.com/api/maps/by-hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        fetch("https://api.beatmaps.io/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 try {
-                    key = json["key"]
+                    key = json.versions[0].key
                     fetchedKey = true
                 } catch {}
             }).catch((err) => {})
@@ -559,7 +559,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
 function BSaverRequest(key) {
     return new Promise((resolve, reject) => {
         console.log("requesting beatsaver key " + key)
-        fetch("https://beatsaver.com/api/maps/detail/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        fetch("https://api.beatmaps.io/maps/beatsaver/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 resolve(json)
             }).catch((err) => {
@@ -634,7 +634,7 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                         client.say(channel, `@${tags.username} requested ${res.name} (${key})`)
                         if(!fs.existsSync(path.join(applicationDir, "covers", res.key + ".png"))) {
                             console.log("downloading cover of song " + res.key)
-                            downloadFile(`https://beatsaver.com${res.coverURL}`, path.join(applicationDir, "covers", res.key + ".png"))
+                            downloadFile(res.versions[0].coverURL, path.join(applicationDir, "covers", res.key + ".png"))
                         }
                         var request = {
                             "name": res.name,
