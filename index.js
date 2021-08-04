@@ -53,11 +53,18 @@ let mainWindow;
 let config;
 
 if(fs.existsSync(path.join(applicationDir, "config.json"))) {
+    var configS = fs.readFileSync(path.join(applicationDir, "config.json"))
     try {
-        config = JSON.parse(fs.readFileSync(path.join(applicationDir, "config.json")))
+        config = JSON.parse(configS)
     } catch {
-        config = JSON.parse(fs.readFileSync(path.join(applicationDir, "config.json")).slice(0, -5))
-        saveConfig()
+        for(let i = 0; i < 200; i++) {
+            try {
+                config = JSON.parse(configS).slice(0, -i)
+                saveConfig()
+            } catch {}
+        }
+        
+        
     }
 } else {
     config = {
@@ -566,7 +573,6 @@ function BSaverRequest(key) {
                 console.log("request failed")
                 resolve("error")
             })
-            
         }).catch((err) => {
             resolve("error")
         })
