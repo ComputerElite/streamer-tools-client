@@ -59,11 +59,11 @@ if(fs.existsSync(path.join(applicationDir, "config.json"))) {
     } catch {
         for(let i = 0; i < 200; i++) {
             try {
-                config = JSON.parse(configS).slice(0, -i)
+                config = JSON.parse(configS.slice(0, -i))
                 saveConfig()
             } catch {}
         }
-        
+        console.log("can't load config")
         
     }
 } else {
@@ -379,8 +379,7 @@ function saveConfig() {
 }
 
 function writeToFile(file, contents) {
-    fs.writeFile(file, contents, err => {
-    })
+    fs.writeFileSync(file, contents)
 }
 
 
