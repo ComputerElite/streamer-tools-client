@@ -202,7 +202,7 @@ var key = false
         fetch("https://api.beatmaps.io/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 try {
-                    key = json.versions[0].key
+                    key = json.id
                     fetchedKey = true
                 } catch {}
             }).catch((err) => {})
@@ -565,7 +565,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
 function BSaverRequest(key) {
     return new Promise((resolve, reject) => {
         console.log("requesting beatsaver key " + key)
-        fetch("https://api.beatmaps.io/maps/beatsaver/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        fetch("https://api.beatmaps.io/maps/id/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 resolve(json)
             }).catch((err) => {
