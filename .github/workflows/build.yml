@@ -29,9 +29,6 @@ jobs:
       - name: Install modules
         run: npm i
         
-      - name: Make build dir
-        run: mkdir build
-        
       - name: Build windows binary
         run: npm run dist
         
