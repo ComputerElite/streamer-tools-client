@@ -699,7 +699,7 @@ function downloadOverlay(overlay) {
 
 app.on('ready', () => {
     mainWindow = new BrowserWindow({
-        icon: 'assets/STC.ico',
+        icon: path.join(__dirname, 'assets', 'STC.ico')
     });
     mainWindow.removeMenu()
     mainWindow.loadURL(url.format({
