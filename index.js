@@ -698,9 +698,9 @@ function downloadOverlay(overlay) {
 }
 
 app.on('ready', () => {
-    mainWindow = new BrowserWindow({});
-
-    //mainWindow.setIcon(path.join(applicationDir, "assets", "stc.png"))
+    mainWindow = new BrowserWindow({
+        icon: 'assets/STC.ico',
+    });
 
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "html", "index.html"),
