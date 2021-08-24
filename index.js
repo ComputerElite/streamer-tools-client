@@ -701,7 +701,7 @@ app.on('ready', () => {
     mainWindow = new BrowserWindow({
         icon: 'assets/STC.ico',
     });
-
+    mainWindow.removeMenu()
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "html", "index.html"),
         protocol: 'file',
