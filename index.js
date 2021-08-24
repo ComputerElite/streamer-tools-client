@@ -195,6 +195,7 @@ var got404 = false;
 
 var fetchedKey = false
 var key = false
+var coverFetchableLocalhost = false
 
  async function GetBeatSaverKey(got404) {
     if(!got404) {
@@ -237,14 +238,12 @@ function fetchData() {
                     try {
                         raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
                         
-                        raw.connected = connected
-                        raw.fetchedKey = fetchedKey
-                        raw.key = key
                         sent = true;
                         if(!raw.configFetched) {
                             UpdateOverlayConfig(true);
                         }
                         if(lastid != raw.id || got404) {
+                            coverFetchableLocalhost = got404 ? raw.coverFetchableLocalhost : false
                             for(let i = 0; i < srm.length; i++) {
                                 if(srm[i].hash.toLowerCase() == raw.id.replace("custom_song_", "").toLowerCase()) {
                                     srm.splice(i, 1)
@@ -252,18 +251,25 @@ function fetchData() {
                             }
                             GetBeatSaverKey(got404);
                             lastid = raw.id
-                            fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
-                                res2.text().then((text) => {
-                                    if(res2.status == 404) {
-                                        coverBase64 = "";
-                                        got404 = true;
-                                    } else {
-                                        coverBase64 = text;
-                                        got404 = false;
-                                    }
+                            if(raw.coverFetchable) {
+                                fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
+                                    res2.text().then((text) => {
+                                        if(res2.status != 200) {
+                                            coverBase64 = "";
+                                            got404 = true;
+                                            coverFetchableLocalhost = false
+                                        } else {
+                                            coverBase64 = text;
+                                            coverFetchableLocalhost = true
+                                            got404 = false;
+                                        }
+                                    })
                                 })
-                            })
+                            }
                         }
+                        raw.connected = connected
+                        raw.fetchedKey = fetchedKey
+                        raw.coverFetchableLocalhost = coverFetchableLocalhost
                     } catch (err) {
                         /*
                         if(lastError != err.toString()) {
