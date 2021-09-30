@@ -200,7 +200,7 @@ var coverFetchableLocalhost = false
  async function GetBeatSaverKey(got404) {
     if(!got404) {
         fetchedKey = false
-        fetch("https://api.beatmaps.io/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        fetch("https://api.beatsaver.io/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 try {
                     key = json.id
@@ -571,7 +571,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
 function BSaverRequest(key) {
     return new Promise((resolve, reject) => {
         console.log("requesting beatsaver key " + key)
-        fetch("https://api.beatmaps.io/maps/id/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        fetch("https://api.beatsaver.io/maps/id/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 resolve(json)
             }).catch((err) => {
@@ -698,10 +698,10 @@ function downloadOverlay(overlay) {
 }
 
 app.on('ready', () => {
-    mainWindow = new BrowserWindow({});
-
-    //mainWindow.setIcon(path.join(applicationDir, "assets", "stc.png"))
-
+    mainWindow = new BrowserWindow({
+        icon: 'assets/STC.ico',
+    });
+    mainWindow.removeMenu()
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "html", "index.html"),
         protocol: 'file',
@@ -937,6 +937,7 @@ api.get(`/windows/home`, async function(req, res) {
         protocol: 'file',
         slashes: true
     }))
+    res.end()
 })
 
 api.get(`/windows/overlays`, async function(req, res) {
@@ -945,6 +946,7 @@ api.get(`/windows/overlays`, async function(req, res) {
         protocol: 'file',
         slashes: true
     }))
+    res.end()
 })
 
 api.get(`/windows/downloads`, async function(req, res) {
@@ -953,6 +955,7 @@ api.get(`/windows/downloads`, async function(req, res) {
         protocol: 'file',
         slashes: true
     }))
+    res.end()
 })
 
 api.get(`/windows/srm`, async function(req, res) {
@@ -961,6 +964,7 @@ api.get(`/windows/srm`, async function(req, res) {
         protocol: 'file',
         slashes: true
     }))
+    res.end()
 })
 
 api.get(`/api/overlays`, async function(req, res) {
