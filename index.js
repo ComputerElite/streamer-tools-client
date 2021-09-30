@@ -200,7 +200,7 @@ var coverFetchableLocalhost = false
  async function GetBeatSaverKey(got404) {
     if(!got404) {
         fetchedKey = false
-        fetch("https://api.beatsaver.io/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        fetch("https://api.beatsaver.com/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 try {
                     key = json.id
@@ -571,15 +571,20 @@ if(config.dcrpe != undefined && config.dcrpe) {
 function BSaverRequest(key) {
     return new Promise((resolve, reject) => {
         console.log("requesting beatsaver key " + key)
-        fetch("https://api.beatsaver.io/maps/id/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
-            result.json().then((json) => {
+        fetch("https://api.beatsaver.com/maps/id/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        if(result.status == 404) {
+            resolve(`error: Song ${key} doesn't exist. Please check BeatSaver for valid songs.`)
+        }    
+        result.json().then((json) => {
+                console.log(json)
                 resolve(json)
             }).catch((err) => {
                 console.log("request failed")
-                resolve("error")
+                resolve("error: Response was not in json format. Please try again later.")
             })
         }).catch((err) => {
-            resolve("error")
+            console.log(err)
+            resolve("error: An unknown error has occurred")
         })
     })
     
@@ -631,8 +636,8 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                 }
                 lastRequest = new Date()
                 BSaverRequest(key).then((res) => {
-                    if(res == "error") {
-                        client.say(channel, `@${tags.username} Song ${key} doesn't exist. Please check BeatSaver for valid songs.`)
+                    if(res.contains("error")) {
+                        client.say(channel, `@${tags.username} ${res.replace("error", "")}`)
                     } else {   
 
                         console.log(`@${tags.username} requested ${res.name} (${key})`)
