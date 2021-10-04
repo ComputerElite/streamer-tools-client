@@ -15,6 +15,7 @@ const { app } = electron
 const  {BrowserWindow } = electron
 const net = require('net');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const BeatSaverAPI = require('beatsaver-api');
 
 const applicationDir = "."
 const MulticastPort = 53500
@@ -22,7 +23,12 @@ const MulticastIp = "232.0.53.5"
 const SocketPort = 53501
 const HttpPort = 53502
 const ApiPort = 53510
-const version = "1.0"
+const version = "1.0.0"
+
+const bsapi = new BeatSaverAPI({
+    AppName: "Streamer-tools-client",
+    Version: version
+});
 /*
 Ports:
     Multicast: 53500
@@ -200,7 +206,7 @@ var coverFetchableLocalhost = false
  async function GetBeatSaverKey(got404) {
     if(!got404) {
         fetchedKey = false
-        fetch("https://api.beatsaver.com/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        fetch("https://api.beatsaver.com/api/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 try {
                     key = json.id
@@ -569,24 +575,7 @@ if(config.dcrpe != undefined && config.dcrpe) {
 
 /////////////////// Twitch bot////////////////////////
 function BSaverRequest(key) {
-    return new Promise((resolve, reject) => {
-        console.log("requesting beatsaver key " + key)
-        fetch("https://api.beatsaver.com/maps/id/" + key, {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
-        if(result.status == 404) {
-            resolve(`error: Song ${key} doesn't exist. Please check BeatSaver for valid songs.`)
-        }    
-        result.json().then((json) => {
-                console.log(json)
-                resolve(json)
-            }).catch((err) => {
-                console.log("request failed")
-                resolve("error: Response was not in json format. Please try again later.")
-            })
-        }).catch((err) => {
-            console.log(err)
-            resolve("error: An unknown error has occurred")
-        })
-    })
+    return bsapi.getMapByID(key)
     
 }
 
@@ -636,7 +625,7 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                 }
                 lastRequest = new Date()
                 BSaverRequest(key).then((res) => {
-                    if(res.contains("error")) {
+                    if(res.includes("error")) {
                         client.say(channel, `@${tags.username} ${res.replace("error", "")}`)
                     } else {   
 

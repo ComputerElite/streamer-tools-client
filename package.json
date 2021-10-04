@@ -15,6 +15,8 @@
   "author": "ComputerElite",
   "license": "GPL-3.0",
   "dependencies": {
+    "axios": "^0.22.0",
+    "beatsaver-api": "^2.0.2",
     "body-parser": "^1.19.0",
     "dgram": "^1.0.1",
     "discord-rich-presence": "0.0.8",
