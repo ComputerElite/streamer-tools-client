@@ -206,7 +206,7 @@ var coverFetchableLocalhost = false
  async function GetBeatSaverKey(got404) {
     if(!got404) {
         fetchedKey = false
-        fetch("https://api.beatsaver.com/api/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
+        fetch("https://api.beatsaver.com/maps/hash/" + raw.id.replace("custom_level_", ""), {headers: { 'User-Agent': 'Streamer-tools-client/1.0 (+https://github.com/ComputerElite/streamer-tools-client/)' }}).then((result) => {
             result.json().then((json) => {
                 try {
                     key = json.id
@@ -541,6 +541,17 @@ if(config.dcrpe != undefined && config.dcrpe) {
                 dcrp.updatePresence({
                     state: raw.players + "/" + raw.maxPlayers + " players",
                     details: "In multiplayer lobby",
+                    smallImageText: smallText,
+                    smallImageKey: 'stc',
+                    largeImageKey: 'bs',
+                    instance: false
+                })
+                break;
+            case 7:
+                // mp spectating
+                dcrp.updatePresence({
+                    state: raw.players + "/" + raw.maxPlayers + " players",
+                    details: "Spectating others",
                     smallImageText: smallText,
                     smallImageKey: 'stc',
                     largeImageKey: 'bs',
