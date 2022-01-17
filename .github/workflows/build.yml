@@ -33,10 +33,9 @@ jobs:
         run: npm run dist
         
       - name: package to zip
-        uses: papeloto/action-zip@v1
+        uses: montudor/action-zip@v1
         with:
-          files: ./build/win-unpacked
-          dest: ./build/streamer-tools-client.zip
+          args: ./build/win-unpacked -qq -r ./build/streamer-tools-client.zip ./build/win-unpacked
         
       - name: Upload windows portable
         uses: actions/upload-artifact@v2
