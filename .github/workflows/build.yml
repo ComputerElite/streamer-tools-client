@@ -33,7 +33,7 @@ jobs:
         run: npm run dist
         
       - name: package to zip
-        uses: papeloto/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
           files: ./build/win-unpacked
           dest: ./build/streamer-tools-client.zip
