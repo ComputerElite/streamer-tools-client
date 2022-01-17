@@ -23,7 +23,7 @@ const MulticastIp = "232.0.53.5"
 const SocketPort = 53501
 const HttpPort = 53502
 const ApiPort = 53510
-const version = "1.0.0"
+const version = "1.0.3"
 
 const bsapi = new BeatSaverAPI({
     AppName: "Streamer-tools-client",
