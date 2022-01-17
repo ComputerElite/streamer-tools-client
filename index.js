@@ -636,10 +636,6 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                 }
                 lastRequest = new Date()
                 BSaverRequest(key).then((res) => {
-                    if(res.includes("error")) {
-                        client.say(channel, `@${tags.username} ${res.replace("error", "")}`)
-                    } else {   
-
                         console.log(`@${tags.username} requested ${res.name} (${key})`)
                         
                         if(config.srm != undefined && config.srm.maxsonglength != undefined && res.metadata.duration > config.srm.maxsonglength) {
@@ -661,7 +657,6 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                             "hash": res.hash
                         }
                         srm.unshift(request)
-                    }
                 })
                 
             }
