@@ -650,7 +650,7 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                         }
                         var request = {
                             "name": res.name,
-                            "key": res.key,
+                            "key": res.id,
                             "coverURL": `http://localhost:${ApiPort}/covers/${res.key}.png`,
                             "requested": 1,
                             "length": res.metadata.duration,
@@ -882,6 +882,7 @@ api.post(`/api/removerequest`, async function(req, res) {
             return;
         }
     }
+    console.log("removed none")
 })
 
 api.post(`/api/updateoverlays`, async function(req, res) {
