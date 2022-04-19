@@ -249,7 +249,7 @@ function fetchData() {
                             UpdateOverlayConfig(true);
                         }
                         if(lastid != raw.id || got404) {
-                            coverFetchableLocalhost = got404 ? raw.coverFetchableLocalhost : false
+                            coverFetchableLocalhost = false
                             for(let i = 0; i < srm.length; i++) {
                                 if(srm[i].hash.toLowerCase() == raw.id.replace("custom_song_", "").toLowerCase()) {
                                     srm.splice(i, 1)
@@ -257,24 +257,26 @@ function fetchData() {
                             }
                             GetBeatSaverKey(got404);
                             lastid = raw.id
-                            if(raw.coverFetchable) {
-                                fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
-                                    res2.text().then((text) => {
-                                        if(res2.status != 200) {
-                                            coverBase64 = "";
-                                            got404 = true;
-                                            coverFetchableLocalhost = false
-                                        } else {
-                                            coverBase64 = text;
-                                            coverFetchableLocalhost = true
-                                            got404 = false;
-                                        }
-                                    })
+                        }
+                        if(raw.coverFetchable && !coverFetchableLocalhost) {
+                            console.log(raw.coverFetchable)
+                            fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
+                                res2.text().then((text) => {
+                                    if(res2.status != 200) {
+                                        coverBase64 = "";
+                                        got404 = true;
+                                        coverFetchableLocalhost = false
+                                    } else {
+                                        coverBase64 = text;
+                                        coverFetchableLocalhost = true
+                                        got404 = false;
+                                    }
                                 })
-                            }
+                            })
                         }
                         raw.connected = connected
                         raw.fetchedKey = fetchedKey
+                        raw.key = key
                         raw.coverFetchableLocalhost = coverFetchableLocalhost
                     } catch (err) {
                         /*
@@ -482,6 +484,20 @@ if(config.dcrpe != undefined && config.dcrpe) {
         songEnd.setSeconds(songEnd.getSeconds() - raw.time + raw.endTime)
         var smallText = "Presence by streamer tools,\nclient by ComputerElite"
         switch(raw.location) {
+            case 0:
+                // menu
+                dcrp.updatePresence({
+                    state: raw.songAuthor + " [" + raw.levelAuthor + "]",
+                    details: raw["levelName"] + " (" + intToDiff(raw.difficulty) + ")",
+                    startTimestamp: songStart,
+                    endTimestamp: songEnd,
+                    smallImageText: smallText,
+                    smallImageKey: 'stc',
+                    largeImageText: 'Score: ' + raw.score + " acc: " + trim(raw.accuracy * 100) + " %",
+                    largeImageKey: 'bs',
+                    instance: true
+                })
+                break;
             case 1:
                 // Solo song
                 dcrp.updatePresence({
@@ -935,6 +951,14 @@ api.get(`/api/requests`, async function(req, res) {
 api.get(`/windows/home`, async function(req, res) {
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "html", "index.html"),
+        protocol: 'file',
+        slashes: true
+    }))
+    res.end()
+})
+api.get(`/windows/stream`, async function(req, res) {
+    mainWindow.loadURL(url.format({
+        pathname: path.join(__dirname, "html", "stream.html"),
         protocol: 'file',
         slashes: true
     }))
