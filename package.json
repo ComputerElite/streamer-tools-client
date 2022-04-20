@@ -1,6 +1,6 @@
 {
   "name": "streamer-tools-client",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Client for the streamer tools Beat Saber mod",
   "main": "index.js",
   "scripts": {

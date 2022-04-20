@@ -28,11 +28,16 @@
                 <div style="text-align: center; font-size: 24px; margin-bottom: 10px;">
                     Streamer Tools Client - Stream
                 </div>
+                <div style="margin-left: 10px;">
+                    <b>THIS TAB IS NOT FOR STREAMING TO TWITCH, YOUTUBE OR ANY OTHER PLATFORM</b>
+                    <br>
+                    This tab is being used to stream to an Overlay streaming server which I created. Please don't use it if you don't know what you're doing
+                </div>
                 <div style="text-align: center; font-size: 18px;">
                     <table style="padding: 10px; width: 400px; text-align: center;">
                         
                         <tr><td>Stream host</td><td><input style="margin-top: 20px;" type='text' id="streamhost"></td></tr>
-                        <tr><td>Stream id</td><td><input style="margin-top: 20px;" type='text' id="streamIdElement" readonly></td></tr>
+                        <tr><td>Stream id (randomly assigned after starting a stream)</td><td><input style="margin-top: 20px;" type='text' id="streamIdElement" readonly></td></tr>
                     </table>
                     <input type="button" value="Start stream" onclick="StartStream()">
                 </div>
@@ -84,7 +89,7 @@
             var pushedCover = false
             var lastId = ""
 
-            function SendData() {
+            function SendData() {e
                 fetch("http://localhost:53510/api/raw").then(res => res.json().then(res => {
                     if(res.id != lastId) pushedCover = false
                     lastId = res.id
