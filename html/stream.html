@@ -68,7 +68,7 @@
 
 
             function StartStreamUpdating() {
-                ws = new WebSocket(hostUrl.replace("http://", "ws://"))
+                ws = new WebSocket(hostUrl.replace("http", "ws"))
             
                 ws.onopen = () => {
                     console.log('WebSocket Opened');
@@ -89,7 +89,7 @@
             var pushedCover = false
             var lastId = ""
 
-            function SendData() {e
+            function SendData() {
                 fetch("http://localhost:53510/api/raw").then(res => res.json().then(res => {
                     if(res.id != lastId) pushedCover = false
                     lastId = res.id
