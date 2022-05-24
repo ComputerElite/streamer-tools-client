@@ -23,7 +23,7 @@ const MulticastIp = "232.0.53.5"
 const SocketPort = 53501
 const HttpPort = 53502
 const ApiPort = 53510
-const version = "1.1.1"
+const version = "1.1.2"
 
 const bsapi = new BeatSaverAPI({
     AppName: "Streamer-tools-client",
@@ -641,7 +641,7 @@ if(config.twitch != undefined && config.twitch.token != undefined && config.twit
                 for(let i = 0; i < srm.length; i++) {
                     if(srm[i].key == key) {
                         srm[i].requested++;
-                        client.say(channel, `@${tags.username} requested ${srm[i].name} (${srm[i].key}). It has noe been requested ${srm[i].requested}`)
+                        client.say(channel, `@${tags.username} requested ${srm[i].key}. It has now been requested ${srm[i].requested}`)
                         return
                     }
                 }
