@@ -240,51 +240,58 @@ function fetchData() {
                     raw.connected = connected
                 });
     
+                let buffer = Buffer.alloc(0);
                 socket.on('data', async function(data){
-                    try {
-                        raw = JSON.parse(data.toString("utf-8", 4, data.readUIntBE(0, 4) + 4))
-                        
-                        sent = true;
-                        if(!raw.configFetched) {
-                            UpdateOverlayConfig(true);
-                        }
-                        if(lastid != raw.id || got404) {
-                            coverFetchableLocalhost = false
-                            for(let i = 0; i < srm.length; i++) {
-                                if(srm[i].hash.toLowerCase() == raw.id.replace("custom_song_", "").toLowerCase()) {
-                                    srm.splice(i, 1)
-                                }
+                    buffer = Buffer.concat([buffer, data]);
+                    while (buffer.length >= 4) {
+                        try {
+                            const messageLength = buffer.readUIntBE(0, 4);
+                            if (buffer.length < 4 + messageLength) {
+                                break;
                             }
-                            GetBeatSaverKey(got404);
-                            lastid = raw.id
-                        }
-                        if(raw.coverFetchable && !coverFetchableLocalhost) {
-                            console.log(raw.coverFetchable)
-                            fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
-                                res2.text().then((text) => {
-                                    if(res2.status != 200) {
-                                        coverBase64 = "";
-                                        got404 = true;
-                                        coverFetchableLocalhost = false
-                                    } else {
-                                        coverBase64 = text;
-                                        coverFetchableLocalhost = true
-                                        got404 = false;
+                            raw = JSON.parse(buffer.toString("utf-8", 4, messageLength + 4))
+                            buffer = buffer.subarray(4 + messageLength);
+                            
+                            sent = true;
+                            if(!raw.configFetched) {
+                                UpdateOverlayConfig(true);
+                            }
+                            if(lastid != raw.id || got404) {
+                                coverFetchableLocalhost = false
+                                for(let i = 0; i < srm.length; i++) {
+                                    if(srm[i].hash.toLowerCase() == raw.id.replace("custom_song_", "").toLowerCase()) {
+                                        srm.splice(i, 1)
                                     }
+                                }
+                                GetBeatSaverKey(got404);
+                                lastid = raw.id
+                            }
+                            if(raw.coverFetchable && !coverFetchableLocalhost) {
+                                console.log(raw.coverFetchable)
+                                fetch("http://" + config.ip + ":" + HttpPort + "/cover/base64").then((res2) => {
+                                    res2.text().then((text) => {
+                                        if(res2.status != 200) {
+                                            coverBase64 = "";
+                                            got404 = true;
+                                            coverFetchableLocalhost = false
+                                        } else {
+                                            coverBase64 = text;
+                                            coverFetchableLocalhost = true
+                                            got404 = false;
+                                        }
+                                    })
                                 })
-                            })
+                            }
+                            raw.connected = connected
+                            raw.fetchedKey = fetchedKey
+                            raw.key = key
+                            raw.coverFetchableLocalhost = coverFetchableLocalhost
+                        } catch (err) {
+                            if(lastError != err.toString()) {
+                                lastError = err.toString();
+                                console.error("couldn't read/parse data from socket: " + lastError)
+                            }
                         }
-                        raw.connected = connected
-                        raw.fetchedKey = fetchedKey
-                        raw.key = key
-                        raw.coverFetchableLocalhost = coverFetchableLocalhost
-                    } catch (err) {
-                        /*
-                        if(lastError != err.toString()) {
-                            lastError = err.toString();
-                            console.error("couldn't read/parse data from socket: " + lastError)
-                        }
-                        */
                     }
                 })
 
