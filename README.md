@@ -4,7 +4,7 @@ A Client for the Streamer tools Beat Saber mod
 # Installation
 ## Downloading the client
 ### Windows
-1. Get the latest binaries from [Actions](https://github.com/ComputerElite/streamer-tools-client/actions) (Simply click the latest entry and then download the zip file at the bottom). You have to have a GitHub account
+1. Get the latest binaries from [Releases](https://github.com/ComputerElite/streamer-tools-client/releases)
 2. Extract the zip file
 3. Run the exe and you should be set up
 ### Mac, Windows and Linux
@@ -14,7 +14,7 @@ A Client for the Streamer tools Beat Saber mod
 4. To run the client simply start start.bat
 
 ## Setting up the client
-After starting the client with start.bat simply put in your Quests ip and hit save.
+After starting the client simply put in your Quests ip and hit save.
 Then you can download overlays from the download section and see them in the overlays section.
 
 ## Adding overlays to obs
