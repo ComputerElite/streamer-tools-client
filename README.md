@@ -1,4 +1,5 @@
-# streamer-tools-client
+> [!WARNING]
+> This repository has moved to Codeberg: https://codeberg.org/kaiya/streamer-tools-client # streamer-tools-client
 A Client for the Streamer tools Beat Saber mod
 
 # Installation
